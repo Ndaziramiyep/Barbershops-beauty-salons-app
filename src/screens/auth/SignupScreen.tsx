@@ -5,27 +5,23 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  SafeAreaView,
   StatusBar,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
-import type { StackNavigationProp } from '@react-navigation/stack';
-import type { RootStackParamList } from '../../types/navigation';
-
-type SignupScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Signup'>;
+import { useRouter } from 'expo-router';
 
 export default function SignupScreen() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const navigation = useNavigation<SignupScreenNavigationProp>();
+  const router = useRouter();
 
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#fff" />
       
-      <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+      <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
         <Ionicons name="arrow-back" size={24} color="#333" />
       </TouchableOpacity>
 
@@ -88,7 +84,7 @@ export default function SignupScreen() {
 
         <View style={styles.footerContainer}>
           <Text style={styles.loginText}>Already have an account? </Text>
-          <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+          <TouchableOpacity onPress={() => router.push('/')}>
             <Text style={styles.loginLink}>Sign in</Text>
           </TouchableOpacity>
         </View>

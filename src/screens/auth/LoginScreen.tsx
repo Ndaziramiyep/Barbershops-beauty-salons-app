@@ -1,30 +1,26 @@
-import React, { useState } from 'react';
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import React, { useState } from "react";
 import {
-  View,
+  StatusBar,
+  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  StyleSheet,
-  SafeAreaView,
-  StatusBar,
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
-import type { StackNavigationProp } from '@react-navigation/stack';
-import type { RootStackParamList } from '../../types/navigation';
-
-type LoginScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Login'>;
+  View,
+} from "react-native";
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function LoginScreen() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
-  const navigation = useNavigation<LoginScreenNavigationProp>();
+  const router = useRouter();
 
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#fff" />
-      
+
       <TouchableOpacity style={styles.backButton}>
         <Ionicons name="arrow-back" size={24} color="#333" />
       </TouchableOpacity>
@@ -36,7 +32,12 @@ export default function LoginScreen() {
 
       <View style={styles.formContainer}>
         <View style={styles.inputContainer}>
-          <Ionicons name="mail-outline" size={20} color="#999" style={styles.inputIcon} />
+          <Ionicons
+            name="mail-outline"
+            size={20}
+            color="#999"
+            style={styles.inputIcon}
+          />
           <TextInput
             style={styles.input}
             placeholder="Email"
@@ -49,7 +50,12 @@ export default function LoginScreen() {
         </View>
 
         <View style={styles.inputContainer}>
-          <Ionicons name="lock-closed-outline" size={20} color="#999" style={styles.inputIcon} />
+          <Ionicons
+            name="lock-closed-outline"
+            size={20}
+            color="#999"
+            style={styles.inputIcon}
+          />
           <TextInput
             style={styles.input}
             placeholder="Password"
@@ -60,7 +66,7 @@ export default function LoginScreen() {
           />
         </View>
 
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.rememberContainer}
           onPress={() => setRememberMe(!rememberMe)}
         >
@@ -70,7 +76,10 @@ export default function LoginScreen() {
           <Text style={styles.rememberText}>Remember me</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.signInButton}>
+        <TouchableOpacity
+          style={styles.signInButton}
+          onPress={() => router.push("/phone-verification")}
+        >
           <Text style={styles.signInButtonText}>Sign in</Text>
         </TouchableOpacity>
 
@@ -94,7 +103,7 @@ export default function LoginScreen() {
           </TouchableOpacity>
           <View style={styles.signUpContainer}>
             <Text style={styles.signUpText}>Don't have an account? </Text>
-            <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
+            <TouchableOpacity onPress={() => router.push("/signup")}>
               <Text style={styles.signUpLink}>Sign up</Text>
             </TouchableOpacity>
           </View>
@@ -107,7 +116,7 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     paddingHorizontal: 24,
   },
   backButton: {
@@ -119,21 +128,21 @@ const styles = StyleSheet.create({
   },
   welcomeTitle: {
     fontSize: 32,
-    fontWeight: 'bold',
-    color: '#333',
+    fontWeight: "bold",
+    color: "#333",
     marginBottom: 8,
   },
   welcomeSubtitle: {
     fontSize: 16,
-    color: '#666',
+    color: "#666",
   },
   formContainer: {
     flex: 1,
   },
   inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#f5f5f5',
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#f5f5f5",
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 16,
@@ -145,11 +154,11 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     fontSize: 16,
-    color: '#333',
+    color: "#333",
   },
   rememberContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 32,
   },
   checkbox: {
@@ -157,40 +166,40 @@ const styles = StyleSheet.create({
     height: 20,
     borderRadius: 4,
     borderWidth: 2,
-    borderColor: '#ddd',
+    borderColor: "#ddd",
     marginRight: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   checkboxChecked: {
-    backgroundColor: '#6366f1',
-    borderColor: '#6366f1',
+    backgroundColor: "#6366f1",
+    borderColor: "#6366f1",
   },
   rememberText: {
     fontSize: 14,
-    color: '#666',
+    color: "#666",
   },
   signInButton: {
-    backgroundColor: '#6366f1',
+    backgroundColor: "#6366f1",
     borderRadius: 12,
     paddingVertical: 16,
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: 32,
   },
   signInButtonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   orText: {
-    textAlign: 'center',
-    color: '#999',
+    textAlign: "center",
+    color: "#999",
     fontSize: 14,
     marginBottom: 24,
   },
   socialContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
+    flexDirection: "row",
+    justifyContent: "center",
     gap: 16,
     marginBottom: 40,
   },
@@ -198,31 +207,31 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: '#f5f5f5',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: "#f5f5f5",
+    alignItems: "center",
+    justifyContent: "center",
   },
   footerContainer: {
-    alignItems: 'center',
-    marginTop: 'auto',
+    alignItems: "center",
+    marginTop: "auto",
     paddingBottom: 32,
   },
   forgotPassword: {
-    color: '#666',
+    color: "#666",
     fontSize: 14,
     marginBottom: 16,
   },
   signUpContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   signUpText: {
-    color: '#666',
+    color: "#666",
     fontSize: 14,
   },
   signUpLink: {
-    color: '#6366f1',
+    color: "#6366f1",
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: "600",
   },
 });
