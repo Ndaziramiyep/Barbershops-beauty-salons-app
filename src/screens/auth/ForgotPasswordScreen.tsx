@@ -28,7 +28,10 @@ export default function ForgotPasswordScreen() {
         </Text>
 
         <View style={styles.optionsContainer}>
-          <TouchableOpacity style={styles.optionCard}>
+          <TouchableOpacity 
+            style={styles.optionCard}
+            onPress={() => router.push('/password-reset?method=email')}
+          >
             <View style={styles.optionIcon}>
               <Ionicons name="mail-outline" size={24} color="#666" />
             </View>
@@ -36,7 +39,10 @@ export default function ForgotPasswordScreen() {
             <Ionicons name="chevron-forward" size={20} color="#666" />
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.optionCard}>
+          <TouchableOpacity 
+            style={styles.optionCard}
+            onPress={() => router.push('/password-reset?method=sms')}
+          >
             <View style={styles.optionIcon}>
               <Ionicons name="phone-portrait-outline" size={24} color="#666" />
             </View>

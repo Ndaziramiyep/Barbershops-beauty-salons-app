@@ -13,6 +13,7 @@ export default function RootLayout() {
       <Stack.Screen name="otp-verification" />
       <Stack.Screen name="forgot-password" />
       <Stack.Screen name="password-reset" />
+      <Stack.Screen name="reset-confirmation" />
     </Stack>
   );
 }
