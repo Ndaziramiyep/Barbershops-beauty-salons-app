@@ -121,7 +121,7 @@ export default function OTPVerificationScreen() {
             (isOtpComplete || isVerified) && styles.continueButtonActive
           ]}
           disabled={!isOtpComplete && !isVerified}
-          onPress={() => (isOtpComplete || isVerified) && router.push('/forgot-password')}
+          onPress={() => (isOtpComplete || isVerified) && router.push('/home')}
         >
           <Text style={styles.continueButtonText}>
             {isVerifying ? 'Verifying...' : 'Continue'}

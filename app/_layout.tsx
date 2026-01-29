@@ -14,6 +14,7 @@ export default function RootLayout() {
       <Stack.Screen name="forgot-password" />
       <Stack.Screen name="password-reset" />
       <Stack.Screen name="reset-confirmation" />
+      <Stack.Screen name="home" />
     </Stack>
   );
 }
