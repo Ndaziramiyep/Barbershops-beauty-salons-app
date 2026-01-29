@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -11,9 +11,24 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import LocationPermissionModal from '../../components/LocationPermissionModal';
 
 export default function HomeScreen() {
   const router = useRouter();
+  const [showLocationModal, setShowLocationModal] = useState(false);
+  const [userLocation, setUserLocation] = useState('123 Lygon St, Carlton Melbourne 3053');
+
+  useEffect(() => {
+    // Show location modal when component mounts
+    setShowLocationModal(true);
+  }, []);
+
+  const handleEnableLocation = () => {
+    // Here you would request actual location permission
+    // For now, we'll just close the modal
+    setShowLocationModal(false);
+    // You could update the location here with actual coordinates
+  };
 
   const services = [
     { id: 1, name: 'Haircuts', image: require('../../../assets/images/haircut-style.jpg') },
@@ -46,7 +61,7 @@ export default function HomeScreen() {
           <Text style={styles.greeting}>Hi, Jenny Wilson</Text>
           <View style={styles.locationRow}>
             <Ionicons name="location" size={14} color="#666" />
-            <Text style={styles.date}>123 Lygon St, Carlton Melbourne 3053</Text>
+            <Text style={styles.date}>{userLocation}</Text>
           </View>
         </View>
 
@@ -142,6 +157,11 @@ export default function HomeScreen() {
           <Ionicons name="person-outline" size={24} color="#999" />
         </TouchableOpacity>
       </View>
+      <LocationPermissionModal
+        visible={showLocationModal}
+        onEnable={handleEnableLocation}
+        onClose={() => setShowLocationModal(false)}
+      />
     </SafeAreaView>
   );
 }
