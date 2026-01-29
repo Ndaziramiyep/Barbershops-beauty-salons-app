@@ -15,13 +15,8 @@ import LocationPermissionModal from '../../components/LocationPermissionModal';
 
 export default function HomeScreen() {
   const router = useRouter();
-  const [showLocationModal, setShowLocationModal] = useState(false);
+  const [showLocationModal, setShowLocationModal] = useState(true);
   const [userLocation, setUserLocation] = useState('123 Lygon St, Carlton Melbourne 3053');
-
-  useEffect(() => {
-    // Show location modal when component mounts
-    setShowLocationModal(true);
-  }, []);
 
   const handleEnableLocation = () => {
     // Here you would request actual location permission
