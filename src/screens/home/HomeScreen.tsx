@@ -16,9 +16,9 @@ export default function HomeScreen() {
   const router = useRouter();
 
   const services = [
-    { id: 1, name: 'Haircuts', image: require('../../../assets/images/haircut-style') },
-    { id: 2, name: 'Make up', image: require('../../../assets/images/bridal-makeup-4.jpg') },
-    { id: 3, name: 'Manicure', image: require('../../../assets/images/bridal-makeup-5.jpg') },
+    { id: 1, name: 'Haircuts', icon: 'cut-outline' },
+    { id: 2, name: 'Make up', icon: 'brush-outline' },
+    { id: 3, name: 'Manicure', icon: 'hand-left-outline' },
   ];
 
   return (
@@ -30,7 +30,7 @@ export default function HomeScreen() {
         <View style={styles.header}>
           <View style={styles.profileSection}>
             <Image
-              source={require('../../../assets/images/specialist-profile1')}
+              source={require('../../../assets/images/icon.png')}
               style={styles.profileImage}
             />
             <View>
@@ -80,7 +80,9 @@ export default function HomeScreen() {
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             {services.map((service) => (
               <TouchableOpacity key={service.id} style={styles.serviceCard}>
-                <Image source={service.image} style={styles.serviceImage} />
+                <View style={styles.serviceIconContainer}>
+                  <Ionicons name={service.icon} size={32} color="#6366f1" />
+                </View>
                 <Text style={styles.serviceName}>{service.name}</Text>
               </TouchableOpacity>
             ))}
@@ -98,7 +100,7 @@ export default function HomeScreen() {
           
           <TouchableOpacity style={styles.salonCard}>
             <Image
-              source={require('../../../assets/images/salon-image1')}
+              source={require('../../../assets/images/icon.png')}
               style={styles.salonImage}
             />
             <View style={styles.salonInfo}>
@@ -226,10 +228,13 @@ const styles = StyleSheet.create({
     marginRight: 16,
     width: 80,
   },
-  serviceImage: {
+  serviceIconContainer: {
     width: 64,
     height: 64,
+    backgroundColor: '#f8f9ff',
     borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
     marginBottom: 8,
   },
   serviceName: {
