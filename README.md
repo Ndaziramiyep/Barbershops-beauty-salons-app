@@ -1,50 +1,152 @@
-# Welcome to your Expo app 👋
+Barbershops-beauty-salons-app/
+├── android/
+├── ios/
+├── assets/
+│ ├── fonts/
+│ ├── images/
+│ └── animations/ # Lottie files or similar
+├── src/
+│ ├── api/ # Networking / API clients
+│ │ ├── index.ts
+│ │ └── salonApi.ts
+│ │
+│ ├── components/ # Generic reusable UI
+│ │ ├── Button.tsx
+│ │ ├── Card.tsx
+│ │ ├── Avatar.tsx
+│ │ └── index.ts
+│ │
+│ ├── constants/ # App-wide constants
+│ │ ├── colors.ts
+│ │ ├── fonts.ts
+│ │ └── sizes.ts
+│ │
+│ ├── navigation/ # Navigation config
+│ │ ├── AppNavigator.tsx
+│ │ ├── AuthNavigator.tsx
+│ │ ├── MainNavigator.tsx
+│ │ └── index.ts
+│ │
+│ ├── screens/ # Feature screens (grouped)
+│ │ ├── auth/
+│ │ │ ├── LoginScreen.tsx
+│ │ │ ├── SignupScreen.tsx
+│ │ │ ├── ForgotPassword.tsx
+│ │ │ └── Onboarding.tsx
+│ │ │
+│ │ ├── home/
+│ │ │ ├── HomeScreen.tsx
+│ │ │ ├── SearchScreen.tsx
+│ │ │ ├── SalonListScreen.tsx
+│ │ │ └── CategoryList.tsx
+│ │ │
+│ │ ├── salon/
+│ │ │ ├── SalonDetail.tsx
+│ │ │ ├── ReviewsScreen.tsx
+│ │ │ ├── Amenities.tsx
+│ │ │ └── Gallery.tsx
+│ │ │
+│ │ ├── booking/
+│ │ │ ├── BookingScreen.tsx
+│ │ │ ├── DateTimePicker.tsx
+│ │ │ ├── PaymentScreen.tsx
+│ │ │ └── ConfirmationScreen.tsx
+│ │ │
+│ │ ├── profile/
+│ │ │ ├── ProfileScreen.tsx
+│ │ │ ├── EditProfile.tsx
+│ │ │ ├── SettingsScreen.tsx
+│ │ │ └── PaymentMethods.tsx
+│ │ │
+│ │ ├── notifications/
+│ │ │ └── NotificationsScreen.tsx
+│ │ │
+│ │ └── index.ts # (optional) Screen exports map
+│ │
+│ ├── services/ # Business logic & helpers
+│ │ ├── authService.ts
+│ │ └── bookingService.ts
+│ │
+│ ├── store/ # Redux or Zustand store
+│ │ ├── index.ts
+│ │ └── slices/
+│ │ ├── authSlice.ts
+│ │ ├── salonSlice.ts
+│ │ └── bookingSlice.ts
+│ │
+│ ├── theme/ # Theming (light/dark)
+│ │ ├── index.ts
+│ │ ├── colors.ts
+│ │ └── typography.ts
+│ │
+│ ├── types/ # TS global types
+│ │ ├── navigation.ts
+│ │ ├── api.ts
+│ │ └── models.ts
+│ │
+│ ├── utils/ # Helpers & utilities
+│ │ ├── dateUtils.ts
+│ │ ├── formatters.ts
+│ │ └── validation.ts
+│ │
+│ └── App.tsx # Main app component
+│
+├── .eslintrc.js
+├── .prettierrc
+├── tsconfig.json
+├── babel.config.js
+├── package.json
+└── README.md
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+📌 Breakdown & Why This Works
+🧭 Navigation
 
-## Get started
+navigation/ holds stack/tab navigators (auth vs main flows).
 
-1. Install dependencies
+React Navigation works well for multiple screens and nested flows.
 
-   ```bash
-   npm install
-   ```
+📱 Screens Organized by Feature
 
-2. Start the app
+Divide screens into feature folders (auth, home, booking, profile, etc.).
 
-   ```bash
-   npx expo start
-   ```
+Makes scaling easier (files related to one feature live together).
 
-In the output, you'll find options to open the app in a
+🧰 Components
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+Reusable UI elements: Button, Card, Avatar, etc.
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+Good for repeating UI from the UI kit (cards, lists).
 
-## Get a fresh project
+📊 State Management
 
-When you're ready, run:
+store/ (Redux Toolkit, Zustand, or another) holds app state.
 
-```bash
-npm run reset-project
-```
+Split into slices or modules per domain.
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+🎨 Theming & Constants
 
-## Learn more
+Use a centralized theme (theme/, constants/) for consistent colors, fonts, sizes.
 
-To learn more about developing your project with Expo, look at the following resources:
+⚡ Utilities & Services
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+Helpers + services for API calls, date formatting, validation, etc.
 
-## Join the community
+🔧 Notes on Screens (based on typical booking apps)
 
-Join our community of developers creating universal apps.
+Flo Cutters UI likely includes flows like:
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+Auth: Splash, Onboarding, Login, Signup
+
+Discovery: Home, Search, Filter, Categories
+
+Salon & Provider Details + Reviews
+
+Booking Flow: Select service → Date/time → Payment → Confirm
+
+Profile & Settings
+
+Notifications & Favorites
+
+Possibly Chat or Map Features
+
+Each of these sections maps to a folder under src/screens/.

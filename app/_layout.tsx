@@ -1,4 +1,14 @@
-import { registerRootComponent } from "expo";
-import App from "../src/App";
+import { Stack } from "expo-router";
 
-registerRootComponent(App);
+export default function RootLayout() {
+  return (
+    <Stack
+      screenOptions={{
+        headerShown: false,
+      }}
+    >
+      <Stack.Screen name="index" />
+      <Stack.Screen name="signup" />
+    </Stack>
+  );
+}
