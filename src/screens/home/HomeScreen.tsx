@@ -28,16 +28,10 @@ export default function HomeScreen() {
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Header */}
         <View style={styles.header}>
-          <View style={styles.profileSection}>
-            <Image
-              source={require('../../../assets/images/specialist-profile1.jpg')}
-              style={styles.profileImage}
-            />
-            <View>
-              <Text style={styles.greeting}>Hi, Jenny Wilson</Text>
-              <Text style={styles.date}>📍 123 Lygon St, Carlton Melbourne 3053</Text>
-            </View>
-          </View>
+          <Image
+            source={require('../../../assets/images/specialist-profile1.jpg')}
+            style={styles.profileImage}
+          />
           <View style={styles.headerIcons}>
             <TouchableOpacity style={styles.iconButton}>
               <Ionicons name="notifications-outline" size={24} color="#333" />
@@ -45,6 +39,14 @@ export default function HomeScreen() {
             <TouchableOpacity style={styles.iconButton}>
               <Ionicons name="search-outline" size={24} color="#333" />
             </TouchableOpacity>
+          </View>
+        </View>
+
+        <View style={styles.userInfo}>
+          <Text style={styles.greeting}>Hi, Jenny Wilson</Text>
+          <View style={styles.locationRow}>
+            <Ionicons name="location" size={14} color="#666" />
+            <Text style={styles.date}>123 Lygon St, Carlton Melbourne 3053</Text>
           </View>
         </View>
 
@@ -63,8 +65,8 @@ export default function HomeScreen() {
             </View>
             <View style={styles.appointmentInfo}>
               <Text style={styles.appointmentTitle}>At The Galleria Hair Salon</Text>
-              <Text style={styles.appointmentTime}>9:00 AM</Text>
             </View>
+            <Text style={styles.appointmentTime}>9:00 AM</Text>
           </TouchableOpacity>
         </View>
 
@@ -77,18 +79,18 @@ export default function HomeScreen() {
             </TouchableOpacity>
           </View>
           
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+          <View style={styles.servicesContainer}>
             {services.map((service) => (
               <TouchableOpacity key={service.id} style={styles.serviceCard}>
                 <Image source={service.image} style={styles.serviceImage} />
                 <Text style={styles.serviceName}>{service.name}</Text>
               </TouchableOpacity>
             ))}
-          </ScrollView>
+          </View>
         </View>
 
         {/* Nearest Salon */}
-        <View style={styles.section}>
+        <View style={[styles.section, styles.lastSection]}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Nearest salon</Text>
             <TouchableOpacity>
@@ -102,15 +104,20 @@ export default function HomeScreen() {
               style={styles.salonImage}
             />
             <View style={styles.salonInfo}>
-              <Text style={styles.salonName}>Bella Rinova</Text>
-              <Text style={styles.salonAddress}>123 Lygon St, Carlton Melbourne 3053</Text>
-              <View style={styles.salonDetails}>
+              <View style={styles.salonHeader}>
+                <Text style={styles.salonName}>Bella Rinova</Text>
                 <View style={styles.rating}>
                   {[1,2,3,4,5].map((star) => (
-                    <Ionicons key={star} name="star" size={12} color="#FFD700" />
+                    <Ionicons key={star} name="star" size={14} color="#FFD700" />
                   ))}
                 </View>
-                <Text style={styles.distance}>📍 5 km</Text>
+              </View>
+              <View style={styles.addressRow}>
+                <Text style={styles.salonAddress}>123 Lygon St, Carlton Melbourne 3053</Text>
+                <View style={styles.distanceContainer}>
+                  <Ionicons name="location" size={14} color="#666" />
+                  <Text style={styles.distance}>5 km</Text>
+                </View>
               </View>
             </View>
           </TouchableOpacity>
@@ -147,61 +154,70 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 18,
-    paddingVertical: 14,
-  },
-  profileSection: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
+    alignItems: 'flex-start',
+    paddingHorizontal: 20,
+    paddingTop: 24,
+    paddingBottom: 8,
   },
   profileImage: {
     width: 44,
     height: 44,
     borderRadius: 22,
-    marginRight: 12,
+  },
+  userInfo: {
+    paddingHorizontal: 20,
+    paddingBottom: 24,
   },
   greeting: {
-    fontSize: 17,
+    fontSize: 18,
     fontWeight: 'bold',
     color: '#333',
+    marginBottom: 8,
+    lineHeight: 24,
+  },
+  locationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   date: {
     fontSize: 12,
     color: '#666',
-    marginTop: 2,
+    marginLeft: 4,
+    lineHeight: 18,
   },
   headerIcons: {
     flexDirection: 'row',
   },
   iconButton: {
-    marginLeft: 14,
+    marginLeft: 16,
   },
   section: {
-    paddingHorizontal: 18,
-    marginBottom: 22,
+    paddingHorizontal: 20,
+    marginBottom: 24,
+  },
+  lastSection: {
+    marginBottom: 8,
   },
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 14,
+    marginBottom: 16,
   },
   sectionTitle: {
-    fontSize: 17,
+    fontSize: 18,
     fontWeight: 'bold',
     color: '#333',
   },
   viewAll: {
-    fontSize: 13,
+    fontSize: 14,
     color: '#999',
   },
   appointmentCard: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#6366f1',
-    padding: 15,
+    padding: 16,
     borderRadius: 12,
   },
   appointmentIcon: {
@@ -211,24 +227,29 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   appointmentTitle: {
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: '600',
     color: '#fff',
   },
   appointmentTime: {
-    fontSize: 13,
+    fontSize: 14,
     color: '#fff',
-    opacity: 0.8,
-    marginTop: 2,
+    fontWeight: '600',
+  },
+  servicesContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 20,
   },
   serviceCard: {
     alignItems: 'center',
-    marginRight: 14,
-    width: 75,
+    flex: 1,
+    maxWidth: 100,
   },
   serviceImage: {
-    width: 58,
-    height: 58,
+    width: 80,
+    height: 80,
     borderRadius: 12,
     marginBottom: 8,
   },
@@ -244,33 +265,55 @@ const styles = StyleSheet.create({
   },
   salonImage: {
     width: '100%',
-    height: 110,
+    height: 180,
   },
   salonInfo: {
     padding: 12,
   },
   salonName: {
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: 'bold',
     color: '#333',
-    marginBottom: 4,
   },
-  salonAddress: {
-    fontSize: 12,
-    color: '#666',
-    marginBottom: 8,
-  },
-  salonDetails: {
+  addressRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
+  salonAddress: {
+    fontSize: 12,
+    color: '#666',
+    flex: 1,
+    marginRight: 8,
+  },
+  salonHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  salonDetails: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+  },
+  leftContent: {
+    flex: 1,
+  },
+  rightContent: {
+    alignItems: 'flex-end',
+  },
   rating: {
     flexDirection: 'row',
+  },
+  distanceContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   distance: {
     fontSize: 12,
     color: '#666',
+    marginLeft: 2,
   },
   bottomNav: {
     flexDirection: 'row',
