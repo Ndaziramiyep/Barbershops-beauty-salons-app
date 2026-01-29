@@ -11,26 +11,38 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 
-export default function LoginScreen() {
+export default function SignupScreen() {
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [rememberMe, setRememberMe] = useState(false);
   const navigation = useNavigation();
 
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#fff" />
       
-      <TouchableOpacity style={styles.backButton}>
+      <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
         <Ionicons name="arrow-back" size={24} color="#333" />
       </TouchableOpacity>
 
-      <View style={styles.welcomeContainer}>
-        <Text style={styles.welcomeTitle}>Welcome!</Text>
-        <Text style={styles.welcomeSubtitle}>Sign in to continue</Text>
+      <View style={styles.headerContainer}>
+        <Text style={styles.title}>Sign up</Text>
+        <Text style={styles.subtitle}>Create a new account</Text>
       </View>
 
       <View style={styles.formContainer}>
+        <View style={styles.inputContainer}>
+          <Ionicons name="person-outline" size={20} color="#999" style={styles.inputIcon} />
+          <TextInput
+            style={styles.input}
+            placeholder="Name"
+            placeholderTextColor="#999"
+            value={name}
+            onChangeText={setName}
+            autoCapitalize="words"
+          />
+        </View>
+
         <View style={styles.inputContainer}>
           <Ionicons name="mail-outline" size={20} color="#999" style={styles.inputIcon} />
           <TextInput
@@ -56,44 +68,25 @@ export default function LoginScreen() {
           />
         </View>
 
-        <TouchableOpacity 
-          style={styles.rememberContainer}
-          onPress={() => setRememberMe(!rememberMe)}
-        >
-          <View style={[styles.checkbox, rememberMe && styles.checkboxChecked]}>
-            {rememberMe && <Ionicons name="checkmark" size={16} color="#fff" />}
-          </View>
-          <Text style={styles.rememberText}>Remember me</Text>
+        <TouchableOpacity style={styles.signUpButton}>
+          <Text style={styles.signUpButtonText}>Sign up</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.signInButton}>
-          <Text style={styles.signInButtonText}>Sign in</Text>
-        </TouchableOpacity>
-
-        <Text style={styles.orText}>Or Continue with</Text>
-
-        <View style={styles.socialContainer}>
-          <TouchableOpacity style={styles.socialButton}>
-            <Ionicons name="logo-facebook" size={24} color="#1877F2" />
+        <View style={styles.termsContainer}>
+          <Text style={styles.termsText}>
+            By continuing you agree to the following{' '}
+          </Text>
+          <TouchableOpacity>
+            <Text style={styles.termsLink}>Terms & Conditions</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.socialButton}>
-            <Ionicons name="logo-google" size={24} color="#DB4437" />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.socialButton}>
-            <Ionicons name="logo-twitter" size={24} color="#1DA1F2" />
-          </TouchableOpacity>
+          <Text style={styles.termsText}> without reservation.</Text>
         </View>
 
         <View style={styles.footerContainer}>
-          <TouchableOpacity>
-            <Text style={styles.forgotPassword}>Forgot your password?</Text>
+          <Text style={styles.loginText}>Already have an account? </Text>
+          <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+            <Text style={styles.loginLink}>Sign in</Text>
           </TouchableOpacity>
-          <View style={styles.signUpContainer}>
-            <Text style={styles.signUpText}>Don't have an account? </Text>
-            <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
-              <Text style={styles.signUpLink}>Sign up</Text>
-            </TouchableOpacity>
-          </View>
         </View>
       </View>
     </SafeAreaView>
@@ -110,16 +103,16 @@ const styles = StyleSheet.create({
     marginTop: 20,
     marginBottom: 40,
   },
-  welcomeContainer: {
+  headerContainer: {
     marginBottom: 40,
   },
-  welcomeTitle: {
+  title: {
     fontSize: 32,
     fontWeight: 'bold',
     color: '#333',
     marginBottom: 8,
   },
-  welcomeSubtitle: {
+  subtitle: {
     fontSize: 16,
     color: '#666',
   },
@@ -143,80 +136,48 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#333',
   },
-  rememberContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 32,
-  },
-  checkbox: {
-    width: 20,
-    height: 20,
-    borderRadius: 4,
-    borderWidth: 2,
-    borderColor: '#ddd',
-    marginRight: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  checkboxChecked: {
-    backgroundColor: '#6366f1',
-    borderColor: '#6366f1',
-  },
-  rememberText: {
-    fontSize: 14,
-    color: '#666',
-  },
-  signInButton: {
+  signUpButton: {
     backgroundColor: '#6366f1',
     borderRadius: 12,
     paddingVertical: 16,
     alignItems: 'center',
     marginBottom: 32,
+    marginTop: 16,
   },
-  signInButtonText: {
+  signUpButtonText: {
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
   },
-  orText: {
-    textAlign: 'center',
-    color: '#999',
-    fontSize: 14,
-    marginBottom: 24,
-  },
-  socialContainer: {
+  termsContainer: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     justifyContent: 'center',
-    gap: 16,
     marginBottom: 40,
+    paddingHorizontal: 20,
   },
-  socialButton: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: '#f5f5f5',
-    alignItems: 'center',
-    justifyContent: 'center',
+  termsText: {
+    fontSize: 12,
+    color: '#999',
+    textAlign: 'center',
+  },
+  termsLink: {
+    fontSize: 12,
+    color: '#6366f1',
+    textDecorationLine: 'underline',
   },
   footerContainer: {
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     marginTop: 'auto',
     paddingBottom: 32,
   },
-  forgotPassword: {
-    color: '#666',
-    fontSize: 14,
-    marginBottom: 16,
-  },
-  signUpContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  signUpText: {
+  loginText: {
     color: '#666',
     fontSize: 14,
   },
-  signUpLink: {
+  loginLink: {
     color: '#6366f1',
     fontSize: 14,
     fontWeight: '600',
