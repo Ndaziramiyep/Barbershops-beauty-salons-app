@@ -1,5 +1,4 @@
-import { Stack } from "expo-router";
+import { registerRootComponent } from 'expo';
+import App from './src/App';
 
-export default function RootLayout() {
-  return <Stack />;
-}
+registerRootComponent(App);
