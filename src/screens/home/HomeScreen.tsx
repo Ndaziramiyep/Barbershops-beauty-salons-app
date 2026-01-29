@@ -16,9 +16,9 @@ export default function HomeScreen() {
   const router = useRouter();
 
   const services = [
-    { id: 1, name: 'Haircuts', icon: 'cut-outline' },
-    { id: 2, name: 'Make up', icon: 'brush-outline' },
-    { id: 3, name: 'Manicure', icon: 'hand-left-outline' },
+    { id: 1, name: 'Haircuts', image: require('../../../assets/images/haircut-style.jpg') },
+    { id: 2, name: 'Make up', image: require('../../../assets/images/bridal-makeup-4.jpg') },
+    { id: 3, name: 'Manicure', image: require('../../../assets/images/bridal-makeup-5.jpg') },
   ];
 
   return (
@@ -30,7 +30,7 @@ export default function HomeScreen() {
         <View style={styles.header}>
           <View style={styles.profileSection}>
             <Image
-              source={require('../../../assets/images/icon.png')}
+              source={require('../../../assets/images/specialist-profile1.jpg')}
               style={styles.profileImage}
             />
             <View>
@@ -80,9 +80,7 @@ export default function HomeScreen() {
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             {services.map((service) => (
               <TouchableOpacity key={service.id} style={styles.serviceCard}>
-                <View style={styles.serviceIconContainer}>
-                  <Ionicons name={service.icon} size={32} color="#6366f1" />
-                </View>
+                <Image source={service.image} style={styles.serviceImage} />
                 <Text style={styles.serviceName}>{service.name}</Text>
               </TouchableOpacity>
             ))}
@@ -100,7 +98,7 @@ export default function HomeScreen() {
           
           <TouchableOpacity style={styles.salonCard}>
             <Image
-              source={require('../../../assets/images/icon.png')}
+              source={require('../../../assets/images/salon-image1.png')}
               style={styles.salonImage}
             />
             <View style={styles.salonInfo}>
@@ -150,8 +148,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
+    paddingHorizontal: 18,
+    paddingVertical: 14,
   },
   profileSection: {
     flexDirection: 'row',
@@ -159,13 +157,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   profileImage: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     marginRight: 12,
   },
   greeting: {
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: 'bold',
     color: '#333',
   },
@@ -178,32 +176,32 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   iconButton: {
-    marginLeft: 16,
+    marginLeft: 14,
   },
   section: {
-    paddingHorizontal: 20,
-    marginBottom: 24,
+    paddingHorizontal: 18,
+    marginBottom: 22,
   },
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 14,
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: 'bold',
     color: '#333',
   },
   viewAll: {
-    fontSize: 14,
+    fontSize: 13,
     color: '#999',
   },
   appointmentCard: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#6366f1',
-    padding: 16,
+    padding: 15,
     borderRadius: 12,
   },
   appointmentIcon: {
@@ -213,28 +211,25 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   appointmentTitle: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '600',
     color: '#fff',
   },
   appointmentTime: {
-    fontSize: 14,
+    fontSize: 13,
     color: '#fff',
     opacity: 0.8,
     marginTop: 2,
   },
   serviceCard: {
     alignItems: 'center',
-    marginRight: 16,
-    width: 80,
+    marginRight: 14,
+    width: 75,
   },
-  serviceIconContainer: {
-    width: 64,
-    height: 64,
-    backgroundColor: '#f8f9ff',
+  serviceImage: {
+    width: 58,
+    height: 58,
     borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
     marginBottom: 8,
   },
   serviceName: {
@@ -249,13 +244,13 @@ const styles = StyleSheet.create({
   },
   salonImage: {
     width: '100%',
-    height: 120,
+    height: 110,
   },
   salonInfo: {
     padding: 12,
   },
   salonName: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: 'bold',
     color: '#333',
     marginBottom: 4,
