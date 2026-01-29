@@ -56,7 +56,7 @@ export default function PasswordResetScreen() {
         <TouchableOpacity 
           style={[styles.sendButton, isValidInput && styles.sendButtonActive]}
           disabled={!isValidInput}
-          onPress={() => isValidInput && console.log('Send link')}
+          onPress={() => isValidInput && router.push(`/reset-confirmation?method=${method}`)}
         >
           <Text style={styles.sendButtonText}>Send link</Text>
         </TouchableOpacity>
