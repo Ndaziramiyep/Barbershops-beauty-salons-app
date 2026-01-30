@@ -2,6 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
+  Alert,
   StatusBar,
   StyleSheet,
   Text,
@@ -10,12 +11,34 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { apiService } from "../../services/apiService";
+import { useAuth } from "../../services/authContext";
 
 export default function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const { login } = useAuth();
+
+  const handleLogin = async () => {
+    if (!email || !password) {
+      Alert.alert('Error', 'Please fill in all fields');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await apiService.login({ email, password });
+      await login(response.token, response.user);
+      router.replace('/home');
+    } catch (error) {
+      Alert.alert('Login Failed', error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -77,10 +100,13 @@ export default function LoginScreen() {
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={styles.signInButton}
-          onPress={() => router.push("/phone-verification")}
+          style={[styles.signInButton, loading && styles.signInButtonDisabled]}
+          onPress={handleLogin}
+          disabled={loading}
         >
-          <Text style={styles.signInButtonText}>Sign in</Text>
+          <Text style={styles.signInButtonText}>
+            {loading ? 'Signing in...' : 'Sign in'}
+          </Text>
         </TouchableOpacity>
 
         <Text style={styles.orText}>Or Continue with</Text>
@@ -186,10 +212,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 32,
   },
-  signInButtonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "600",
+  signInButtonDisabled: {
+    backgroundColor: "#9ca3af",
   },
   orText: {
     textAlign: "center",

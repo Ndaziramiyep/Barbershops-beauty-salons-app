@@ -167,7 +167,10 @@ export default function HomeScreen() {
         >
           <Ionicons name="chatbubble-outline" size={24} color="#999" />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.navItem}>
+        <TouchableOpacity 
+          style={styles.navItem}
+          onPress={() => router.push('/profile')}
+        >
           <Ionicons name="person-outline" size={24} color="#999" />
         </TouchableOpacity>
       </View>
