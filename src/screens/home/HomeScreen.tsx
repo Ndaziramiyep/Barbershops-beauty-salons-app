@@ -12,18 +12,28 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import LocationPermissionModal from '../../components/LocationPermissionModal';
+import { getCurrentLocation, LocationData } from '../../services/locationService';
 
 export default function HomeScreen() {
   const router = useRouter();
   const [showLocationModal, setShowLocationModal] = useState(true);
-  const [userLocation, setUserLocation] = useState('123 Lygon St, Carlton Melbourne 3053');
+  const [userLocation, setUserLocation] = useState('Fetching location...');
+  const [locationData, setLocationData] = useState<LocationData | null>(null);
 
-  const handleEnableLocation = () => {
-    // Here you would request actual location permission
-    // For now, we'll just close the modal
+  const handleEnableLocation = async () => {
     setShowLocationModal(false);
-    // You could update the location here with actual coordinates
+    const location = await getCurrentLocation();
+    if (location) {
+      setLocationData(location);
+      setUserLocation(location.address);
+    } else {
+      setUserLocation('Location unavailable');
+    }
   };
+
+  useEffect(() => {
+    handleEnableLocation();
+  }, []);
 
   const services = [
     { id: 1, name: 'Haircuts', image: require('../../../assets/images/haircut-style.jpg') },

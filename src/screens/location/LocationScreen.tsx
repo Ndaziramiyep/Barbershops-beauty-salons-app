@@ -10,9 +10,29 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { getCurrentLocation, LocationData } from '../../services/locationService';
+import { useFocusEffect } from '@react-navigation/native';
 
 export default function LocationScreen() {
   const [searchQuery, setSearchQuery] = useState('');
+  const [currentLocation, setCurrentLocation] = useState('Fetching location...');
+  const [locationData, setLocationData] = useState<LocationData | null>(null);
+
+  const fetchLocation = async () => {
+    const location = await getCurrentLocation();
+    if (location) {
+      setLocationData(location);
+      setCurrentLocation(location.address);
+    } else {
+      setCurrentLocation('Location unavailable');
+    }
+  };
+
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchLocation();
+    }, [])
+  );
 
   const nearbyPlaces = [
     {
@@ -31,7 +51,7 @@ export default function LocationScreen() {
       <View style={styles.header}>
         <View style={styles.locationInfo}>
           <Ionicons name="location-outline" size={16} color="#666" />
-          <Text style={styles.locationText}>6391 Elgin St. Celina, Delaware 10299</Text>
+          <Text style={styles.locationText}>{currentLocation}</Text>
         </View>
         
         <View style={styles.searchContainer}>
