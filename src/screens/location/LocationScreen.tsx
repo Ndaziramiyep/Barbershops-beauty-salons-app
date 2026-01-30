@@ -1,21 +1,27 @@
-import React, { useState } from 'react';
+import { Ionicons } from "@expo/vector-icons";
+import { useFocusEffect } from "@react-navigation/native";
+import React, { useState } from "react";
 import {
-  View,
-  Text,
+  Image,
+  ScrollView,
   StyleSheet,
+  Text,
   TextInput,
   TouchableOpacity,
-  ScrollView,
-  Image,
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { getCurrentLocation, LocationData } from '../../services/locationService';
-import { useFocusEffect } from '@react-navigation/native';
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
+import {
+  getCurrentLocation,
+  LocationData,
+} from "../../services/locationService";
 
 export default function LocationScreen() {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [currentLocation, setCurrentLocation] = useState('Fetching location...');
+  const [searchQuery, setSearchQuery] = useState("");
+  const [currentLocation, setCurrentLocation] = useState(
+    "Fetching location...",
+  );
   const [locationData, setLocationData] = useState<LocationData | null>(null);
 
   const fetchLocation = async () => {
@@ -24,24 +30,24 @@ export default function LocationScreen() {
       setLocationData(location);
       setCurrentLocation(location.address);
     } else {
-      setCurrentLocation('Location unavailable');
+      setCurrentLocation("Location unavailable");
     }
   };
 
   useFocusEffect(
     React.useCallback(() => {
       fetchLocation();
-    }, [])
+    }, []),
   );
 
   const nearbyPlaces = [
     {
       id: 1,
-      name: 'Bella Rinova',
-      address: '2972 Westheimer Rd. Santa Ana',
+      name: "Bella Rinova",
+      address: "2972 Westheimer Rd. Santa Ana",
       rating: 4.8,
-      distance: '25 km',
-      image: require('../../../assets/images/salon-image1.png'),
+      distance: "25 km",
+      image: require("../../../assets/images/salon-image1.png"),
     },
   ];
 
@@ -53,9 +59,14 @@ export default function LocationScreen() {
           <Ionicons name="location-outline" size={16} color="#666" />
           <Text style={styles.locationText}>{currentLocation}</Text>
         </View>
-        
+
         <View style={styles.searchContainer}>
-          <Ionicons name="search-outline" size={20} color="#999" style={styles.searchIcon} />
+          <Ionicons
+            name="search-outline"
+            size={20}
+            color="#999"
+            style={styles.searchIcon}
+          />
           <TextInput
             style={styles.searchInput}
             placeholder="Search by location"
@@ -71,39 +82,54 @@ export default function LocationScreen() {
 
       {/* Map Area */}
       <View style={styles.mapContainer}>
-        <View style={styles.mapPlaceholder}>
-          {/* Map pins */}
-          <View style={[styles.mapPin, { top: 120, left: 60 }]}>
-            <View style={styles.pinIcon}>
-              <Ionicons name="location" size={20} color="#fff" />
+        <MapView
+          style={styles.map}
+          provider={PROVIDER_GOOGLE}
+          initialRegion={{
+            latitude: locationData?.latitude || 37.78825,
+            longitude: locationData?.longitude || -122.4324,
+            latitudeDelta: 0.0922,
+            longitudeDelta: 0.0421,
+          }}
+          showsUserLocation={true}
+          showsMyLocationButton={true}
+        >
+          {/* Salon markers */}
+          <Marker
+            coordinate={{
+              latitude: (locationData?.latitude || 37.78825) + 0.01,
+              longitude: (locationData?.longitude || -122.4324) + 0.01,
+            }}
+            title="Bella Rinova"
+            description="Beauty Salon"
+          >
+            <View style={styles.customMarker}>
+              <Ionicons name="location" size={30} color="#6366f1" />
             </View>
-          </View>
+          </Marker>
           
-          <View style={[styles.mapPin, { top: 180, right: 80 }]}>
-            <Image 
-              source={require('../../../assets/images/specialist-profile1.jpg')} 
-              style={styles.pinAvatar} 
-            />
-          </View>
-          
-          <View style={[styles.mapPin, { top: 250, right: 60 }]}>
-            <Image 
-              source={require('../../../assets/images/specialist-profile2.jpg')} 
-              style={styles.pinAvatar} 
-            />
-          </View>
-
-          {/* User location circle */}
-          <View style={styles.userLocationCircle}>
-            <View style={styles.userLocationDot} />
-          </View>
-        </View>
+          <Marker
+            coordinate={{
+              latitude: (locationData?.latitude || 37.78825) - 0.01,
+              longitude: (locationData?.longitude || -122.4324) + 0.015,
+            }}
+            title="Hair Specialist"
+            description="Hair Salon"
+          >
+            <View style={styles.avatarMarker}>
+              <Image
+                source={require("../../../assets/images/specialist-profile1.jpg")}
+                style={styles.markerAvatar}
+              />
+            </View>
+          </Marker>
+        </MapView>
       </View>
 
       {/* Bottom Sheet */}
       <View style={styles.bottomSheet}>
         <View style={styles.bottomSheetHandle} />
-        
+
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
           {nearbyPlaces.map((place) => (
             <TouchableOpacity key={place.id} style={styles.placeCard}>
@@ -149,34 +175,34 @@ export default function LocationScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: "#f8f9fa",
   },
   header: {
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
   },
   locationInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 16,
   },
   locationText: {
     marginLeft: 8,
     fontSize: 14,
-    color: '#666',
+    color: "#666",
   },
   searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#f5f5f5',
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#f5f5f5",
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 12,
@@ -187,7 +213,7 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     fontSize: 16,
-    color: '#333',
+    color: "#333",
   },
   filterButton: {
     marginLeft: 12,
@@ -196,52 +222,29 @@ const styles = StyleSheet.create({
     flex: 1,
     margin: 20,
     borderRadius: 20,
-    overflow: 'hidden',
-    backgroundColor: '#e8e8e8',
+    overflow: "hidden",
   },
-  mapPlaceholder: {
+  map: {
     flex: 1,
-    position: 'relative',
   },
-  mapPin: {
-    position: 'absolute',
-    alignItems: 'center',
+  customMarker: {
+    alignItems: "center",
+    justifyContent: "center",
   },
-  pinIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#6366f1',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  pinAvatar: {
+  avatarMarker: {
     width: 40,
     height: 40,
     borderRadius: 20,
     borderWidth: 3,
-    borderColor: '#fff',
+    borderColor: "#fff",
+    overflow: "hidden",
   },
-  userLocationCircle: {
-    position: 'absolute',
-    bottom: 100,
-    left: '50%',
-    marginLeft: -50,
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: 'rgba(99, 102, 241, 0.2)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  userLocationDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    backgroundColor: '#6366f1',
+  markerAvatar: {
+    width: "100%",
+    height: "100%",
   },
   bottomSheet: {
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     paddingTop: 12,
@@ -251,24 +254,24 @@ const styles = StyleSheet.create({
   bottomSheetHandle: {
     width: 40,
     height: 4,
-    backgroundColor: '#ddd',
+    backgroundColor: "#ddd",
     borderRadius: 2,
-    alignSelf: 'center',
+    alignSelf: "center",
     marginBottom: 20,
   },
   placeCard: {
     width: 280,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     borderRadius: 16,
     marginRight: 16,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
   },
   placeImage: {
-    width: '100%',
+    width: "100%",
     height: 120,
     borderTopLeftRadius: 16,
     borderTopRightRadius: 16,
@@ -278,53 +281,54 @@ const styles = StyleSheet.create({
   },
   placeName: {
     fontSize: 18,
-    fontWeight: '600',
-    color: '#333',
+    fontWeight: "600",
+    color: "#333",
     marginBottom: 4,
   },
   placeAddress: {
     fontSize: 14,
-    color: '#666',
+    color: "#666",
     marginBottom: 8,
   },
   placeDetails: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
   ratingContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   rating: {
     marginLeft: 4,
     fontSize: 14,
-    fontWeight: '500',
-    color: '#333',
+    fontWeight: "500",
+    color: "#333",
   },
   distance: {
     fontSize: 14,
-    color: '#666',
+    color: "#666",
   },
   bottomNav: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 0,
     left: 0,
     right: 0,
-    flexDirection: 'row',
-    backgroundColor: '#fff',
+    flexDirection: "row",
+    backgroundColor: "#fff",
     paddingVertical: 16,
     paddingHorizontal: 20,
+    paddingBottom: 32,
     borderTopWidth: 1,
-    borderTopColor: '#f0f0f0',
+    borderTopColor: "#f0f0f0",
   },
   navItem: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   activeNavItem: {
-    backgroundColor: 'rgba(99, 102, 241, 0.1)',
+    backgroundColor: "rgba(99, 102, 241, 0.1)",
     borderRadius: 12,
     paddingVertical: 8,
   },
