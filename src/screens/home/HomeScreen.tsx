@@ -139,7 +139,10 @@ export default function HomeScreen() {
         <TouchableOpacity style={styles.navItem}>
           <Ionicons name="home" size={24} color="#6366f1" />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.navItem}>
+        <TouchableOpacity 
+          style={styles.navItem}
+          onPress={() => router.push('/location')}
+        >
           <Ionicons name="location-outline" size={24} color="#999" />
         </TouchableOpacity>
         <TouchableOpacity style={styles.navItem}>

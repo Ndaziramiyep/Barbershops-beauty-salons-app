@@ -1,0 +1,311 @@
+import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
+  ScrollView,
+  Image,
+} from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
+export default function LocationScreen() {
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const nearbyPlaces = [
+    {
+      id: 1,
+      name: 'Bella Rinova',
+      address: '2972 Westheimer Rd. Santa Ana',
+      rating: 4.8,
+      distance: '25 km',
+      image: require('../../../assets/images/salon-image1.png'),
+    },
+  ];
+
+  return (
+    <SafeAreaView style={styles.container}>
+      {/* Header */}
+      <View style={styles.header}>
+        <View style={styles.locationInfo}>
+          <Ionicons name="location-outline" size={16} color="#666" />
+          <Text style={styles.locationText}>6391 Elgin St. Celina, Delaware 10299</Text>
+        </View>
+        
+        <View style={styles.searchContainer}>
+          <Ionicons name="search-outline" size={20} color="#999" style={styles.searchIcon} />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search by location"
+            placeholderTextColor="#999"
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+          />
+          <TouchableOpacity style={styles.filterButton}>
+            <Ionicons name="options-outline" size={20} color="#333" />
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      {/* Map Area */}
+      <View style={styles.mapContainer}>
+        <View style={styles.mapPlaceholder}>
+          {/* Map pins */}
+          <View style={[styles.mapPin, { top: 120, left: 60 }]}>
+            <View style={styles.pinIcon}>
+              <Ionicons name="location" size={20} color="#fff" />
+            </View>
+          </View>
+          
+          <View style={[styles.mapPin, { top: 180, right: 80 }]}>
+            <Image 
+              source={require('../../../assets/images/specialist-profile1.jpg')} 
+              style={styles.pinAvatar} 
+            />
+          </View>
+          
+          <View style={[styles.mapPin, { top: 250, right: 60 }]}>
+            <Image 
+              source={require('../../../assets/images/specialist-profile2.jpg')} 
+              style={styles.pinAvatar} 
+            />
+          </View>
+
+          {/* User location circle */}
+          <View style={styles.userLocationCircle}>
+            <View style={styles.userLocationDot} />
+          </View>
+        </View>
+      </View>
+
+      {/* Bottom Sheet */}
+      <View style={styles.bottomSheet}>
+        <View style={styles.bottomSheetHandle} />
+        
+        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+          {nearbyPlaces.map((place) => (
+            <TouchableOpacity key={place.id} style={styles.placeCard}>
+              <Image source={place.image} style={styles.placeImage} />
+              <View style={styles.placeInfo}>
+                <Text style={styles.placeName}>{place.name}</Text>
+                <Text style={styles.placeAddress}>{place.address}</Text>
+                <View style={styles.placeDetails}>
+                  <View style={styles.ratingContainer}>
+                    <Ionicons name="star" size={12} color="#FFD700" />
+                    <Text style={styles.rating}>{place.rating}</Text>
+                  </View>
+                  <Text style={styles.distance}>{place.distance}</Text>
+                </View>
+              </View>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
+
+      {/* Bottom Navigation */}
+      <View style={styles.bottomNav}>
+        <TouchableOpacity style={styles.navItem}>
+          <Ionicons name="home-outline" size={24} color="#999" />
+        </TouchableOpacity>
+        <TouchableOpacity style={[styles.navItem, styles.activeNavItem]}>
+          <Ionicons name="location" size={24} color="#6366f1" />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.navItem}>
+          <Ionicons name="calendar-outline" size={24} color="#999" />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.navItem}>
+          <Ionicons name="chatbubble-outline" size={24} color="#999" />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.navItem}>
+          <Ionicons name="person-outline" size={24} color="#999" />
+        </TouchableOpacity>
+      </View>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#f8f9fa',
+  },
+  header: {
+    backgroundColor: '#fff',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  locationInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  locationText: {
+    marginLeft: 8,
+    fontSize: 14,
+    color: '#666',
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f5f5f5',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  searchIcon: {
+    marginRight: 12,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 16,
+    color: '#333',
+  },
+  filterButton: {
+    marginLeft: 12,
+  },
+  mapContainer: {
+    flex: 1,
+    margin: 20,
+    borderRadius: 20,
+    overflow: 'hidden',
+    backgroundColor: '#e8e8e8',
+  },
+  mapPlaceholder: {
+    flex: 1,
+    position: 'relative',
+  },
+  mapPin: {
+    position: 'absolute',
+    alignItems: 'center',
+  },
+  pinIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#6366f1',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  pinAvatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    borderWidth: 3,
+    borderColor: '#fff',
+  },
+  userLocationCircle: {
+    position: 'absolute',
+    bottom: 100,
+    left: '50%',
+    marginLeft: -50,
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: 'rgba(99, 102, 241, 0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  userLocationDot: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: '#6366f1',
+  },
+  bottomSheet: {
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingTop: 12,
+    paddingHorizontal: 20,
+    paddingBottom: 100,
+  },
+  bottomSheetHandle: {
+    width: 40,
+    height: 4,
+    backgroundColor: '#ddd',
+    borderRadius: 2,
+    alignSelf: 'center',
+    marginBottom: 20,
+  },
+  placeCard: {
+    width: 280,
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    marginRight: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  placeImage: {
+    width: '100%',
+    height: 120,
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+  },
+  placeInfo: {
+    padding: 16,
+  },
+  placeName: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 4,
+  },
+  placeAddress: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 8,
+  },
+  placeDetails: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  ratingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  rating: {
+    marginLeft: 4,
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#333',
+  },
+  distance: {
+    fontSize: 14,
+    color: '#666',
+  },
+  bottomNav: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
+    backgroundColor: '#fff',
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    borderTopWidth: 1,
+    borderTopColor: '#f0f0f0',
+  },
+  navItem: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  activeNavItem: {
+    backgroundColor: 'rgba(99, 102, 241, 0.1)',
+    borderRadius: 12,
+    paddingVertical: 8,
+  },
+});
