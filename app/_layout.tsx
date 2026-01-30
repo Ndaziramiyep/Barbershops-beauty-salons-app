@@ -15,6 +15,9 @@ export default function RootLayout() {
       <Stack.Screen name="password-reset" />
       <Stack.Screen name="reset-confirmation" />
       <Stack.Screen name="home" />
+      <Stack.Screen name="location" />
+      <Stack.Screen name="booking" />
+      <Stack.Screen name="chat" />
     </Stack>
   );
 }

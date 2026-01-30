@@ -3,15 +3,15 @@ import { useFocusEffect } from "@react-navigation/native";
 import React, { useState } from "react";
 import {
   Image,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
+import { SafeAreaView } from "react-native-safe-area-context";
+import BottomNavBar from "../../components/BottomNavBar";
 import {
   getCurrentLocation,
   LocationData,
@@ -107,7 +107,7 @@ export default function LocationScreen() {
               <Ionicons name="location" size={30} color="#6366f1" />
             </View>
           </Marker>
-          
+
           <Marker
             coordinate={{
               latitude: (locationData?.latitude || 37.78825) - 0.01,
@@ -130,7 +130,7 @@ export default function LocationScreen() {
       <View style={styles.bottomSheet}>
         <View style={styles.bottomSheetHandle} />
 
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+        <View style={styles.cardContainer}>
           {nearbyPlaces.map((place) => (
             <TouchableOpacity key={place.id} style={styles.placeCard}>
               <Image source={place.image} style={styles.placeImage} />
@@ -147,27 +147,10 @@ export default function LocationScreen() {
               </View>
             </TouchableOpacity>
           ))}
-        </ScrollView>
+        </View>
       </View>
 
-      {/* Bottom Navigation */}
-      <View style={styles.bottomNav}>
-        <TouchableOpacity style={styles.navItem}>
-          <Ionicons name="home-outline" size={24} color="#999" />
-        </TouchableOpacity>
-        <TouchableOpacity style={[styles.navItem, styles.activeNavItem]}>
-          <Ionicons name="location" size={24} color="#6366f1" />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navItem}>
-          <Ionicons name="calendar-outline" size={24} color="#999" />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navItem}>
-          <Ionicons name="chatbubble-outline" size={24} color="#999" />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navItem}>
-          <Ionicons name="person-outline" size={24} color="#999" />
-        </TouchableOpacity>
-      </View>
+      <BottomNavBar />
     </SafeAreaView>
   );
 }
@@ -180,7 +163,8 @@ const styles = StyleSheet.create({
   header: {
     backgroundColor: "#fff",
     paddingHorizontal: 20,
-    paddingVertical: 16,
+    paddingTop: 32,
+    paddingBottom: 16,
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
     shadowColor: "#000",
@@ -248,8 +232,7 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     paddingTop: 12,
-    paddingHorizontal: 20,
-    paddingBottom: 100,
+    paddingBottom: 8,
   },
   bottomSheetHandle: {
     width: 40,
@@ -257,13 +240,15 @@ const styles = StyleSheet.create({
     backgroundColor: "#ddd",
     borderRadius: 2,
     alignSelf: "center",
-    marginBottom: 20,
+    marginBottom: 12,
+  },
+  cardContainer: {
+    alignItems: "center",
   },
   placeCard: {
-    width: 280,
+    width: "90%",
     backgroundColor: "#fff",
     borderRadius: 16,
-    marginRight: 16,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -308,28 +293,5 @@ const styles = StyleSheet.create({
   distance: {
     fontSize: 14,
     color: "#666",
-  },
-  bottomNav: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    flexDirection: "row",
-    backgroundColor: "#fff",
-    paddingVertical: 16,
-    paddingHorizontal: 20,
-    paddingBottom: 32,
-    borderTopWidth: 1,
-    borderTopColor: "#f0f0f0",
-  },
-  navItem: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  activeNavItem: {
-    backgroundColor: "rgba(99, 102, 241, 0.1)",
-    borderRadius: 12,
-    paddingVertical: 8,
   },
 });

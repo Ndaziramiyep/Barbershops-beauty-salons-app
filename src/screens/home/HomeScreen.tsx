@@ -155,10 +155,16 @@ export default function HomeScreen() {
         >
           <Ionicons name="location-outline" size={24} color="#999" />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.navItem}>
+        <TouchableOpacity 
+          style={styles.navItem}
+          onPress={() => router.push('/booking')}
+        >
           <Ionicons name="calendar-outline" size={24} color="#999" />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.navItem}>
+        <TouchableOpacity 
+          style={styles.navItem}
+          onPress={() => router.push('/chat')}
+        >
           <Ionicons name="chatbubble-outline" size={24} color="#999" />
         </TouchableOpacity>
         <TouchableOpacity style={styles.navItem}>
