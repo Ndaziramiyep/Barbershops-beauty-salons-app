@@ -1,6 +1,8 @@
 import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import React from "react";
 import {
+  Alert,
   Image,
   ScrollView,
   StyleSheet,
@@ -10,8 +12,29 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import BottomNavBar from "../../components/BottomNavBar";
+import { useAuth } from "../../services/authContext";
 
 export default function ProfileScreen() {
+  const { logout } = useAuth();
+  const router = useRouter();
+
+  const handleLogout = () => {
+    Alert.alert(
+      'Logout',
+      'Are you sure you want to logout?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Logout',
+          style: 'destructive',
+          onPress: async () => {
+            await logout();
+            router.replace('/');
+          },
+        },
+      ]
+    );
+  };
   const menuItems = [
     {
       id: 1,
@@ -93,7 +116,11 @@ export default function ProfileScreen() {
         {/* Menu Items */}
         <View style={styles.menuContainer}>
           {menuItems.map((item) => (
-            <TouchableOpacity key={item.id} style={styles.menuItem}>
+            <TouchableOpacity 
+              key={item.id} 
+              style={styles.menuItem}
+              onPress={item.title === 'Logout' ? handleLogout : undefined}
+            >
               <View style={styles.menuLeft}>
                 <Ionicons name={item.icon} size={20} color="#333" />
                 <Text style={styles.menuTitle}>{item.title}</Text>

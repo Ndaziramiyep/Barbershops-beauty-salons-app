@@ -18,7 +18,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    loadStoredAuth();
+    console.log('AuthProvider: Loading stored auth...');
+    // Add a small delay to ensure AsyncStorage is ready
+    const timer = setTimeout(() => {
+      loadStoredAuth();
+    }, 100);
+    
+    return () => clearTimeout(timer);
   }, []);
 
   const loadStoredAuth = async () => {
@@ -32,6 +38,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     } catch (error) {
       console.error('Error loading stored auth:', error);
+      // Clear corrupted data
+      await AsyncStorage.removeItem('token');
+      await AsyncStorage.removeItem('user');
     } finally {
       setIsLoading(false);
     }

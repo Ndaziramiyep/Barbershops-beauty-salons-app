@@ -1,1 +1,29 @@
-import { useRouter } from 'expo-router';\nimport React, { useEffect } from 'react';\nimport { ActivityIndicator, View } from 'react-native';\nimport { useAuth } from '../services/authContext';\n\ninterface ProtectedRouteProps {\n  children: React.ReactNode;\n}\n\nexport default function ProtectedRoute({ children }: ProtectedRouteProps) {\n  const { user, isLoading } = useAuth();\n  const router = useRouter();\n\n  useEffect(() => {\n    if (!isLoading && !user) {\n      router.replace('/');\n    }\n  }, [user, isLoading]);\n\n  if (isLoading) {\n    return (\n      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>\n        <ActivityIndicator size=\"large\" color=\"#6366f1\" />\n      </View>\n    );\n  }\n\n  if (!user) {\n    return null;\n  }\n\n  return <>{children}</>;\n}
+import { useRouter } from 'expo-router';
+import React, { useEffect } from 'react';
+import { ActivityIndicator, View } from 'react-native';
+import { useAuth } from '../services/authContext';
+
+export default function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  const { user, isLoading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!isLoading && !user) {
+      router.replace('/');
+    }
+  }, [user, isLoading]);
+
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" color="#6366f1" />
+      </View>
+    );
+  }
+
+  if (!user) {
+    return null;
+  }
+
+  return children;
+}

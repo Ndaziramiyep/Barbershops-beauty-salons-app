@@ -31,9 +31,20 @@ export default function LoginScreen() {
     setLoading(true);
     try {
       const response = await apiService.login({ email, password });
+      
+      // Check if user needs verification
+      if (response.requiresVerification) {
+        Alert.alert(
+          'Email Verification Required',
+          response.message,
+          [{ text: 'OK', onPress: () => router.push(`/otp-verification?email=${email}`) }]
+        );
+        return;
+      }
+      
       await login(response.token, response.user);
       router.replace('/home');
-    } catch (error) {
+    } catch (error: any) {
       Alert.alert('Login Failed', error.message);
     } finally {
       setLoading(false);

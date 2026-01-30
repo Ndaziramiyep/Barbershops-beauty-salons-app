@@ -36,11 +36,27 @@ export default function SignupScreen() {
 
     setLoading(true);
     try {
+      console.log('Starting registration...');
       const response = await apiService.register({ name, email, password, phone });
-      await login(response.token, response.user);
-      router.replace('/home');
-    } catch (error) {
-      Alert.alert('Registration Failed', error.message);
+      console.log('Registration response:', response);
+      Alert.alert(
+        'Registration Successful', 
+        response.message || 'Please check your email for OTP verification.',
+        [{ 
+          text: 'OK', 
+          onPress: () => {
+            // Clear input fields
+            setName('');
+            setEmail('');
+            setPassword('');
+            setPhone('');
+            router.push(`/otp-verification?email=${email}`);
+          }
+        }]
+      );
+    } catch (error: any) {
+      console.error('Registration error:', error);
+      Alert.alert('Registration Failed', error.message || 'Registration failed. Please try again.');
     } finally {
       setLoading(false);
     }

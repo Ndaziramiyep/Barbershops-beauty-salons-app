@@ -8,6 +8,13 @@ export interface LocationData {
 
 export const getCurrentLocation = async (): Promise<LocationData | null> => {
   try {
+    // Check if location services are enabled
+    const enabled = await Location.hasServicesEnabledAsync();
+    if (!enabled) {
+      console.log('Location services are disabled');
+      return null;
+    }
+
     // Request permission
     const { status } = await Location.requestForegroundPermissionsAsync();
     if (status !== 'granted') {
@@ -37,7 +44,7 @@ export const getCurrentLocation = async (): Promise<LocationData | null> => {
       address: formattedAddress,
     };
   } catch (error) {
-    console.error('Error getting location:', error);
+    console.log('Error getting location:', error);
     return null;
   }
 };

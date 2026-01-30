@@ -6,17 +6,23 @@ import {
   TouchableOpacity,
   StyleSheet,
   StatusBar,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
+import { apiService } from '../../services/apiService';
+import { useAuth } from '../../services/authContext';
 
 export default function OTPVerificationScreen() {
   const [otp, setOtp] = useState(['', '', '', '']);
-  const [resendTimer, setResendTimer] = useState(40);
+  const [resendTimer, setResendTimer] = useState(120); // 2 minutes
   const [isVerifying, setIsVerifying] = useState(false);
   const [isVerified, setIsVerified] = useState(false);
   const router = useRouter();
+  const { login } = useAuth();
+  const params = useLocalSearchParams();
+  const email = params.email as string || '';
   const inputRefs = useRef<TextInput[]>([]);
 
   useEffect(() => {
@@ -37,17 +43,38 @@ export default function OTPVerificationScreen() {
 
     // Auto-verify when all 4 digits are entered
     if (newOtp.every(digit => digit !== '')) {
-      verifyOTP(newOtp);
+      verifyOTP(newOtp.join(''));
     }
   };
 
-  const verifyOTP = (otpArray: string[]) => {
+  const verifyOTP = async (otpCode: string) => {
     setIsVerifying(true);
-    // Simulate OTP verification
-    setTimeout(() => {
-      setIsVerifying(false);
+    try {
+      const response = await apiService.verifyOTP({ email, otp: otpCode });
+      await login(response.token, response.user);
       setIsVerified(true);
-    }, 1500);
+      Alert.alert('Success', 'Email verified successfully!', [
+        { text: 'OK', onPress: () => router.replace('/home') }
+      ]);
+    } catch (error: any) {
+      Alert.alert('Verification Failed', error.message);
+      setOtp(['', '', '', '']);
+    } finally {
+      setIsVerifying(false);
+    }
+  };
+
+  const handleResendOTP = async () => {
+    try {
+      await apiService.resendOTP({ email });
+      setResendTimer(120);
+      setOtp(['', '', '', '']);
+      setIsVerified(false);
+      setIsVerifying(false);
+      Alert.alert('Success', 'New OTP sent to your email');
+    } catch (error: any) {
+      Alert.alert('Error', error.message);
+    }
   };
 
   const handleKeyPress = (key: string, index: number) => {
@@ -57,6 +84,11 @@ export default function OTPVerificationScreen() {
   };
 
   const isOtpComplete = otp.every(digit => digit !== '');
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -67,10 +99,10 @@ export default function OTPVerificationScreen() {
       </TouchableOpacity>
 
       <View style={styles.content}>
-        <Text style={styles.title}>Verify phone</Text>
+        <Text style={styles.title}>Verify Email</Text>
         <Text style={styles.subtitle}>
-          Please enter the 4-digit security code we{'\n'}just sent you at{' '}
-          <Text style={styles.phoneNumber}>733-444-xxxx</Text>
+          Please enter the 4-digit security code we sent to your email{' '}
+          <Text style={styles.phoneNumber}>{email}</Text>
         </Text>
 
         <View style={styles.otpContainer}>
@@ -99,17 +131,12 @@ export default function OTPVerificationScreen() {
 
         {resendTimer > 0 ? (
           <TouchableOpacity style={styles.resendContainer}>
-            <Text style={styles.resendText}>Resend in {resendTimer} Sec</Text>
+            <Text style={styles.resendText}>Resend in {formatTime(resendTimer)}</Text>
           </TouchableOpacity>
         ) : (
           <TouchableOpacity 
             style={styles.resendContainer}
-            onPress={() => {
-              setResendTimer(40);
-              setOtp(['', '', '', '']);
-              setIsVerified(false);
-              setIsVerifying(false);
-            }}
+            onPress={handleResendOTP}
           >
             <Text style={styles.resendActiveText}>Resend Code</Text>
           </TouchableOpacity>
@@ -121,7 +148,7 @@ export default function OTPVerificationScreen() {
             (isOtpComplete || isVerified) && styles.continueButtonActive
           ]}
           disabled={!isOtpComplete && !isVerified}
-          onPress={() => (isOtpComplete || isVerified) && router.push('/home')}
+          onPress={() => (isOtpComplete || isVerified) && router.replace('/home')}
         >
           <Text style={styles.continueButtonText}>
             {isVerifying ? 'Verifying...' : 'Continue'}
