@@ -9,6 +9,8 @@ import {
   Image,
   Alert,
   Linking,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -134,21 +136,21 @@ export default function ChatConversationScreen() {
         <View key={msg.id} style={[styles.messageContainer, msg.isMe ? styles.myMessage : styles.otherMessage]}>
           {!msg.isMe && (
             <Image 
-              source={require('../../assets/images/specialist-profile1.jpg')} 
+              source={require('../assets/images/specialist-profile1.jpg')} 
               style={styles.messageAvatar} 
             />
           )}
           <View style={[styles.messageBubble, msg.isMe ? styles.myBubble : styles.otherBubble]}>
             <View style={styles.voiceMessage}>
               <TouchableOpacity style={styles.playButton}>
-                <Ionicons name="play" size={16} color={msg.isMe ? '#fff' : '#6366f1'} />
+                <Ionicons name="play" size={16} color="#fff" />
               </TouchableOpacity>
               <View style={styles.waveform}>
                 {[...Array(20)].map((_, i) => (
                   <View key={i} style={[styles.waveBar, { height: Math.random() * 20 + 5 }]} />
                 ))}
               </View>
-              <Text style={[styles.voiceDuration, { color: msg.isMe ? '#fff' : '#666' }]}>
+              <Text style={[styles.voiceDuration, { color: '#666' }]}>
                 {msg.duration}
               </Text>
             </View>
@@ -164,7 +166,7 @@ export default function ChatConversationScreen() {
       <View key={msg.id} style={[styles.messageContainer, msg.isMe ? styles.myMessage : styles.otherMessage]}>
         {!msg.isMe && (
           <Image 
-            source={require('../../assets/images/specialist-profile1.jpg')} 
+            source={require('../assets/images/specialist-profile1.jpg')} 
             style={styles.messageAvatar} 
           />
         )}
@@ -182,6 +184,11 @@ export default function ChatConversationScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
+      <KeyboardAvoidingView 
+        style={styles.container} 
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+      >
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
@@ -256,6 +263,7 @@ export default function ChatConversationScreen() {
           </TouchableOpacity>
         </View>
       </View>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
@@ -363,7 +371,7 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    backgroundColor: '#6366f1',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 8,
@@ -376,7 +384,7 @@ const styles = StyleSheet.create({
   },
   waveBar: {
     width: 2,
-    backgroundColor: 'rgba(255,255,255,0.6)',
+    backgroundColor: '#6366f1',
     marginHorizontal: 1,
     borderRadius: 1,
   },

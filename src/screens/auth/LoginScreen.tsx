@@ -9,6 +9,9 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
 } from "react-native";
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { apiService } from "../../services/apiService";
@@ -47,7 +50,12 @@ export default function LoginScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+      <KeyboardAvoidingView 
+        style={styles.container} 
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      >
+        <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
+          <StatusBar barStyle="dark-content" backgroundColor="#fff" />
 
       <TouchableOpacity style={styles.backButton}>
         <Ionicons name="arrow-back" size={24} color="#333" />
@@ -140,6 +148,8 @@ export default function LoginScreen() {
           </View>
         </View>
       </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
@@ -148,6 +158,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
+  },
+  scrollContainer: {
+    flexGrow: 1,
     paddingHorizontal: 24,
   },
   backButton: {

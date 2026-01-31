@@ -1,6 +1,8 @@
 const mongoose = require('mongoose');
 const Salon = require('./models/Salon');
 const FAQ = require('./models/FAQ');
+const User = require('./models/User');
+const Message = require('./models/Message');
 require('dotenv').config();
 
 const seedData = async () => {
@@ -12,6 +14,8 @@ const seedData = async () => {
     // Clear existing data
     await Salon.deleteMany({});
     await FAQ.deleteMany({});
+    await User.deleteMany({});
+    await Message.deleteMany({});
     console.log('Cleared existing data');
 
     // Seed Salons
@@ -147,6 +151,27 @@ const seedData = async () => {
 
     await FAQ.insertMany(faqs);
     console.log('FAQs seeded successfully');
+
+    // Seed sample users for messaging
+    const users = [
+      {
+        name: 'Angela Young',
+        email: 'angela@example.com',
+        password: 'password123',
+        phone: '+1234567890',
+        avatar: 'specialist-profile1.jpg'
+      },
+      {
+        name: 'Steve Didko', 
+        email: 'steve@example.com',
+        password: 'password123',
+        phone: '+1234567891',
+        avatar: 'specialist-profile2.jpg'
+      }
+    ];
+
+    const createdUsers = await User.insertMany(users);
+    console.log('Sample users seeded successfully');
 
     console.log('Database seeding completed successfully!');
     process.exit(0);

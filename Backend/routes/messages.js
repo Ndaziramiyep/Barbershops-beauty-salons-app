@@ -1,5 +1,6 @@
 const express = require('express');
 const Message = require('../models/Message');
+const mongoose = require('mongoose');
 const auth = require('../middleware/auth');
 
 const router = express.Router();
@@ -13,8 +14,8 @@ router.get('/conversations', auth, async (req, res) => {
       {
         $match: {
           $or: [
-            { sender: mongoose.Types.ObjectId(userId) },
-            { receiver: mongoose.Types.ObjectId(userId) }
+            { sender: new mongoose.Types.ObjectId(userId) },
+            { receiver: new mongoose.Types.ObjectId(userId) }
           ]
         }
       },
@@ -25,7 +26,7 @@ router.get('/conversations', auth, async (req, res) => {
         $group: {
           _id: {
             $cond: [
-              { $eq: ['$sender', mongoose.Types.ObjectId(userId)] },
+              { $eq: ['$sender', new mongoose.Types.ObjectId(userId)] },
               '$receiver',
               '$sender'
             ]
@@ -36,7 +37,7 @@ router.get('/conversations', auth, async (req, res) => {
               $cond: [
                 {
                   $and: [
-                    { $eq: ['$receiver', mongoose.Types.ObjectId(userId)] },
+                    { $eq: ['$receiver', new mongoose.Types.ObjectId(userId)] },
                     { $eq: ['$isRead', false] }
                   ]
                 },

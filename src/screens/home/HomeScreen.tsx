@@ -197,6 +197,7 @@ export default function HomeScreen() {
           ) : (
             <Text style={styles.noDataText}>No salons found nearby</Text>
           )}
+        </View>
       </ScrollView>
 
       {/* Bottom Navigation */}
