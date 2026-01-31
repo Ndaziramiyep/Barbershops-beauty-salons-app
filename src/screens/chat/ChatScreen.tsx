@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import React from "react";
 import {
   Image,
@@ -12,6 +13,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import BottomNavBar from "../../components/BottomNavBar";
 
 export default function ChatScreen() {
+  const router = useRouter();
   const messages = [
     {
       id: 1,
@@ -103,7 +105,11 @@ export default function ChatScreen() {
       {/* Messages List */}
       <ScrollView style={styles.messagesList} showsVerticalScrollIndicator={false}>
         {messages.map((message) => (
-          <TouchableOpacity key={message.id} style={styles.messageItem}>
+          <TouchableOpacity 
+            key={message.id} 
+            style={styles.messageItem}
+            onPress={() => router.push(`/chat-conversation?contactName=${encodeURIComponent(message.name)}&contactId=${message.id}`)}
+          >
             <View style={styles.avatarContainer}>
               <Image source={message.avatar} style={styles.avatar} />
               {message.online && <View style={styles.onlineIndicator} />}

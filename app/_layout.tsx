@@ -22,6 +22,7 @@ export default function RootLayout() {
         <Stack.Screen name="chat" />
         <Stack.Screen name="profile" />
         <Stack.Screen name="faqs" />
+        <Stack.Screen name="chat-conversation" />
       </Stack>
     </AuthProvider>
   );
