@@ -58,7 +58,13 @@ export default function HomeScreen() {
             <TouchableOpacity style={styles.iconButton}>
               <Ionicons name="notifications-outline" size={24} color="#333" />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.iconButton}>
+            <TouchableOpacity 
+              style={styles.iconButton}
+              onPress={() => {
+                console.log('Search button pressed');
+                router.push('/search');
+              }}
+            >
               <Ionicons name="search-outline" size={24} color="#333" />
             </TouchableOpacity>
           </View>
