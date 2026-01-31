@@ -13,9 +13,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import LocationPermissionModal from '../../components/LocationPermissionModal';
 import { getCurrentLocation, LocationData } from '../../services/locationService';
+import { useAuth } from '../../services/authContext';
 
 export default function HomeScreen() {
   const router = useRouter();
+  const { user } = useAuth();
   const [showLocationModal, setShowLocationModal] = useState(true);
   const [userLocation, setUserLocation] = useState('Fetching location...');
   const [locationData, setLocationData] = useState<LocationData | null>(null);
@@ -63,7 +65,7 @@ export default function HomeScreen() {
         </View>
 
         <View style={styles.userInfo}>
-          <Text style={styles.greeting}>Hi, Jenny Wilson</Text>
+          <Text style={styles.greeting}>Hi, {user?.name || 'User'}</Text>
           <View style={styles.locationRow}>
             <Ionicons name="location" size={14} color="#666" />
             <Text style={styles.date}>{userLocation}</Text>

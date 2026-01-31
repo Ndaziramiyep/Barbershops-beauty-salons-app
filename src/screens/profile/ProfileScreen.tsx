@@ -15,7 +15,7 @@ import BottomNavBar from "../../components/BottomNavBar";
 import { useAuth } from "../../services/authContext";
 
 export default function ProfileScreen() {
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
   const router = useRouter();
 
   const handleLogout = () => {
@@ -105,12 +105,12 @@ export default function ProfileScreen() {
         {/* User Info */}
         <View style={styles.userInfo}>
           <View style={styles.nameContainer}>
-            <Text style={styles.userName}>Robert Fox</Text>
+            <Text style={styles.userName}>{user?.name || 'User'}</Text>
             <TouchableOpacity style={styles.editIcon}>
               <Ionicons name="create-outline" size={16} color="#6366f1" />
             </TouchableOpacity>
           </View>
-          <Text style={styles.userEmail}>robert_fox@gmail.com</Text>
+          <Text style={styles.userEmail}>{user?.email || 'user@example.com'}</Text>
         </View>
 
         {/* Menu Items */}
