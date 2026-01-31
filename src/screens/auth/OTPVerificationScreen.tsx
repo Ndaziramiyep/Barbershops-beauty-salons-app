@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -16,21 +16,12 @@ import { useAuth } from '../../services/authContext';
 
 export default function OTPVerificationScreen() {
   const [otp, setOtp] = useState(['', '', '', '']);
-  const [resendTimer, setResendTimer] = useState(120); // 2 minutes
-  const [isVerifying, setIsVerifying] = useState(false);
-  const [isVerified, setIsVerified] = useState(false);
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const { email, isLogin } = useLocalSearchParams();
   const { login } = useAuth();
-  const params = useLocalSearchParams();
-  const email = params.email as string || '';
+  
   const inputRefs = useRef<TextInput[]>([]);
-
-  useEffect(() => {
-    if (resendTimer > 0) {
-      const timer = setTimeout(() => setResendTimer(resendTimer - 1), 1000);
-      return () => clearTimeout(timer);
-    }
-  }, [resendTimer]);
 
   const handleOtpChange = (value: string, index: number) => {
     const newOtp = [...otp];
@@ -40,54 +31,33 @@ export default function OTPVerificationScreen() {
     if (value && index < 3) {
       inputRefs.current[index + 1]?.focus();
     }
-
-    // Auto-verify when all 4 digits are entered
-    if (newOtp.every(digit => digit !== '')) {
-      verifyOTP(newOtp.join(''));
-    }
   };
 
-  const verifyOTP = async (otpCode: string) => {
-    setIsVerifying(true);
+  const handleVerify = async () => {
+    const otpCode = otp.join('');
+    if (otpCode.length !== 4) {
+      Alert.alert('Error', 'Please enter the complete OTP');
+      return;
+    }
+
+    setLoading(true);
     try {
-      const response = await apiService.verifyOTP({ email, otp: otpCode });
-      await login(response.token, response.user);
-      setIsVerified(true);
-      Alert.alert('Success', 'Email verified successfully!', [
-        { text: 'OK', onPress: () => router.replace('/home') }
-      ]);
+      const response = await apiService.verifyOTP({ email: email as string, otp: otpCode });
+      
+      if (!isLogin) {
+        // For signup flow, complete login and go to dashboard
+        await login(response.token, response.user);
+        router.replace('/home');
+      } else {
+        // For login flow, complete the login process
+        await login(response.token, response.user);
+        router.replace('/home');
+      }
     } catch (error: any) {
       Alert.alert('Verification Failed', error.message);
-      setOtp(['', '', '', '']);
     } finally {
-      setIsVerifying(false);
+      setLoading(false);
     }
-  };
-
-  const handleResendOTP = async () => {
-    try {
-      await apiService.resendOTP({ email });
-      setResendTimer(120);
-      setOtp(['', '', '', '']);
-      setIsVerified(false);
-      setIsVerifying(false);
-      Alert.alert('Success', 'New OTP sent to your email');
-    } catch (error: any) {
-      Alert.alert('Error', error.message);
-    }
-  };
-
-  const handleKeyPress = (key: string, index: number) => {
-    if (key === 'Backspace' && !otp[index] && index > 0) {
-      inputRefs.current[index - 1]?.focus();
-    }
-  };
-
-  const isOtpComplete = otp.every(digit => digit !== '');
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
   return (
@@ -98,61 +68,42 @@ export default function OTPVerificationScreen() {
         <Ionicons name="arrow-back" size={24} color="#333" />
       </TouchableOpacity>
 
-      <View style={styles.content}>
-        <Text style={styles.title}>Verify Email</Text>
+      <View style={styles.headerContainer}>
+        <Text style={styles.title}>Verification</Text>
         <Text style={styles.subtitle}>
-          Please enter the 4-digit security code we sent to your email{' '}
-          <Text style={styles.phoneNumber}>{email}</Text>
+          Enter the 4-digit code sent to{'\n'}{email}
         </Text>
+      </View>
 
-        <View style={styles.otpContainer}>
-          {otp.map((digit, index) => (
-            <TextInput
-              key={index}
-              ref={(ref) => {
-                if (ref) inputRefs.current[index] = ref;
-              }}
-              style={[
-                styles.otpInput,
-                digit && styles.otpInputFilled,
-                isVerified && digit && styles.otpInputVerified,
-                isVerifying && digit && styles.otpInputVerifying
-              ]}
-              value={digit}
-              onChangeText={(value) => handleOtpChange(value, index)}
-              onKeyPress={({ nativeEvent }) => handleKeyPress(nativeEvent.key, index)}
-              keyboardType="numeric"
-              maxLength={1}
-              textAlign="center"
-              editable={!isVerified && !isVerifying}
-            />
-          ))}
-        </View>
+      <View style={styles.otpContainer}>
+        {otp.map((digit, index) => (
+          <TextInput
+            key={index}
+            ref={(ref) => (inputRefs.current[index] = ref!)}
+            style={[styles.otpInput, digit && styles.otpInputFilled]}
+            value={digit}
+            onChangeText={(value) => handleOtpChange(value, index)}
+            keyboardType="numeric"
+            maxLength={1}
+            textAlign="center"
+          />
+        ))}
+      </View>
 
-        {resendTimer > 0 ? (
-          <TouchableOpacity style={styles.resendContainer}>
-            <Text style={styles.resendText}>Resend in {formatTime(resendTimer)}</Text>
-          </TouchableOpacity>
-        ) : (
-          <TouchableOpacity 
-            style={styles.resendContainer}
-            onPress={handleResendOTP}
-          >
-            <Text style={styles.resendActiveText}>Resend Code</Text>
-          </TouchableOpacity>
-        )}
+      <TouchableOpacity 
+        style={[styles.verifyButton, loading && styles.verifyButtonDisabled]} 
+        onPress={handleVerify}
+        disabled={loading}
+      >
+        <Text style={styles.verifyButtonText}>
+          {loading ? 'Verifying...' : 'Verify'}
+        </Text>
+      </TouchableOpacity>
 
-        <TouchableOpacity 
-          style={[
-            styles.continueButton, 
-            (isOtpComplete || isVerified) && styles.continueButtonActive
-          ]}
-          disabled={!isOtpComplete && !isVerified}
-          onPress={() => (isOtpComplete || isVerified) && router.replace('/home')}
-        >
-          <Text style={styles.continueButtonText}>
-            {isVerifying ? 'Verifying...' : 'Continue'}
-          </Text>
+      <View style={styles.resendContainer}>
+        <Text style={styles.resendText}>Didn't receive the code? </Text>
+        <TouchableOpacity>
+          <Text style={styles.resendLink}>Resend</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -163,15 +114,15 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
+    paddingHorizontal: 24,
   },
   backButton: {
     marginTop: 20,
-    marginLeft: 20,
     marginBottom: 40,
   },
-  content: {
-    flex: 1,
-    paddingHorizontal: 24,
+  headerContainer: {
+    marginBottom: 60,
+    alignItems: 'center',
   },
   title: {
     fontSize: 32,
@@ -182,12 +133,8 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 16,
     color: '#666',
+    textAlign: 'center',
     lineHeight: 24,
-    marginBottom: 40,
-  },
-  phoneNumber: {
-    color: '#6366f1',
-    fontWeight: '600',
   },
   otpContainer: {
     flexDirection: 'row',
@@ -203,49 +150,39 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     color: '#333',
-    textAlign: 'center',
   },
   otpInputFilled: {
-    backgroundColor: '#e8f4fd',
-    borderWidth: 1,
+    backgroundColor: '#e0e7ff',
+    borderWidth: 2,
     borderColor: '#6366f1',
   },
-  otpInputVerified: {
-    backgroundColor: '#dcfce7',
-    borderColor: '#10b981',
-  },
-  otpInputVerifying: {
-    backgroundColor: '#fef3c7',
-    borderColor: '#f59e0b',
-  },
-  resendContainer: {
-    alignItems: 'center',
-    marginBottom: 40,
-  },
-  resendText: {
-    fontSize: 14,
-    color: '#6366f1',
-  },
-  resendActiveText: {
-    fontSize: 14,
-    color: '#6366f1',
-    fontWeight: '600',
-    textDecorationLine: 'underline',
-  },
-  continueButton: {
-    backgroundColor: '#d1d5db',
+  verifyButton: {
+    backgroundColor: '#6366f1',
     borderRadius: 12,
     paddingVertical: 16,
     alignItems: 'center',
-    marginTop: 'auto',
-    marginBottom: 32,
+    marginBottom: 40,
   },
-  continueButtonActive: {
-    backgroundColor: '#6366f1',
+  verifyButtonDisabled: {
+    backgroundColor: '#9ca3af',
   },
-  continueButtonText: {
+  verifyButtonText: {
     color: '#fff',
     fontSize: 16,
+    fontWeight: '600',
+  },
+  resendContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  resendText: {
+    fontSize: 14,
+    color: '#666',
+  },
+  resendLink: {
+    fontSize: 14,
+    color: '#6366f1',
     fontWeight: '600',
   },
 });

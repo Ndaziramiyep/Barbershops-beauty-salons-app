@@ -30,20 +30,14 @@ export default function LoginScreen() {
 
     setLoading(true);
     try {
-      const response = await apiService.login({ email, password });
+      // Send OTP for login verification
+      await apiService.sendLoginOTP({ email, password });
       
-      // Check if user needs verification
-      if (response.requiresVerification) {
-        Alert.alert(
-          'Email Verification Required',
-          response.message,
-          [{ text: 'OK', onPress: () => router.push(`/otp-verification?email=${email}`) }]
-        );
-        return;
-      }
-      
-      await login(response.token, response.user);
-      router.replace('/home');
+      Alert.alert(
+        'OTP Sent',
+        'Please verify your identity with the OTP sent to your email.',
+        [{ text: 'OK', onPress: () => router.push(`/otp-verification?email=${email}&isLogin=true`) }]
+      );
     } catch (error: any) {
       Alert.alert('Login Failed', error.message);
     } finally {

@@ -190,3 +190,38 @@ router.post('/resend-otp', async (req, res) => {
 });
 
 module.exports = router;
+// Send Login OTP
+router.post('/send-login-otp', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    // Check if user exists
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).json({ message: 'Invalid credentials' });
+    }
+
+    // Check password
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: 'Invalid credentials' });
+    }
+
+    // Generate OTP for login
+    const otp = generateOTP();
+    const otpExpires = new Date(Date.now() + 2 * 60 * 1000); // 2 minutes
+    
+    user.otp = otp;
+    user.otpExpires = otpExpires;
+    await user.save();
+    
+    // Send OTP email
+    await sendOTPEmail(email, otp, user.name);
+    
+    res.json({ 
+      message: 'OTP sent to your email for login verification'
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
