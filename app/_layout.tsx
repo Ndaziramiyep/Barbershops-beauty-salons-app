@@ -23,6 +23,8 @@ export default function RootLayout() {
         <Stack.Screen name="profile" />
         <Stack.Screen name="faqs" />
         <Stack.Screen name="chat-conversation" />
+        <Stack.Screen name="voice-call" />
+        <Stack.Screen name="video-call" />
       </Stack>
     </AuthProvider>
   );

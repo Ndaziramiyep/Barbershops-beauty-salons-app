@@ -30,43 +30,7 @@ export default function ChatConversationScreen() {
   const router = useRouter();
   const { contactName, contactId } = useLocalSearchParams();
   const [message, setMessage] = useState('');
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: 1,
-      text: 'Oh Hello Angela Young',
-      time: '08:25 am',
-      isMe: true,
-      type: 'text'
-    },
-    {
-      id: 2,
-      text: 'I feeling better than before. Should I need a haircut?',
-      time: '08:25 am',
-      isMe: true,
-      type: 'text'
-    },
-    {
-      id: 3,
-      text: 'I will check-in this evening at 7:30 pm. Is it ok for you?',
-      time: '08:25 am',
-      isMe: false,
-      type: 'text'
-    },
-    {
-      id: 4,
-      text: 'Yeah sure I will be there at 7 pm with my brother.',
-      time: '08:25 am',
-      isMe: true,
-      type: 'text'
-    },
-    {
-      id: 5,
-      time: '08:25 am',
-      isMe: false,
-      type: 'voice',
-      duration: '0:15'
-    }
-  ]);
+  const [messages, setMessages] = useState<Message[]>([]);
 
   const scrollViewRef = useRef<ScrollView>(null);
 
@@ -88,17 +52,11 @@ export default function ChatConversationScreen() {
   };
 
   const handleVoiceCall = () => {
-    Alert.alert('Voice Call', `Calling ${contactName}...`, [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Call', onPress: () => Linking.openURL('tel:+1234567890') }
-    ]);
+    router.push(`/voice-call?contactName=${encodeURIComponent(contactName as string || 'Angela Young')}`);
   };
 
   const handleVideoCall = () => {
-    Alert.alert('Video Call', `Starting video call with ${contactName}...`, [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Start Call', onPress: () => console.log('Video call started') }
-    ]);
+    router.push(`/video-call?contactName=${encodeURIComponent(contactName as string || 'Angela Young')}`);
   };
 
   const handleImagePicker = () => {
@@ -217,7 +175,16 @@ export default function ChatConversationScreen() {
         showsVerticalScrollIndicator={false}
         onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
       >
-        {messages.map(renderMessage)}
+        {messages.length === 0 ? (
+          <View style={styles.emptyStateContainer}>
+            <View style={styles.emptyStateIcon}>
+              <Ionicons name="chatbubble-outline" size={60} color="#e0e0e0" />
+            </View>
+            <Text style={styles.emptyStateText}>No Messages yet</Text>
+          </View>
+        ) : (
+          messages.map(renderMessage)
+        )}
       </ScrollView>
 
       {/* Input Area */}
@@ -431,5 +398,18 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#666',
     marginTop: 4,
+  },
+  emptyStateContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 100,
+  },
+  emptyStateIcon: {
+    marginBottom: 16,
+  },
+  emptyStateText: {
+    fontSize: 16,
+    color: '#999',
   },
 });
