@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -11,11 +11,13 @@ import {
   Linking,
   KeyboardAvoidingView,
   Platform,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { colors } from '../src/theme/colors';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface Message {
   id: number;
@@ -31,20 +33,89 @@ export default function ChatConversationScreen() {
   const { contactName, contactId } = useLocalSearchParams();
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const scrollViewRef = useRef<ScrollView>(null);
 
-  const sendMessage = () => {
+  useEffect(() => {
+    if (contactId) {
+      loadMessages();
+    }
+  }, [contactId]);
+
+  useEffect(() => {
+    const unsubscribe = router.addListener?.('focus', () => {
+      if (contactId) {
+        loadMessages();
+      }
+    });
+    return unsubscribe;
+  }, [contactId]);
+
+  const loadMessages = async () => {
+    try {
+      // Load from local storage first
+      const stored = await AsyncStorage.getItem(`chat_${contactId}`);
+      if (stored) {
+        setMessages(JSON.parse(stored));
+      }
+      
+      // Also try to load from database
+      const response = await fetch(`http://10.0.2.2:5000/api/messages/${contactId}`);
+      if (response.ok) {
+        const chatMessages = await response.json();
+        const formattedMessages = chatMessages.map((msg: any, index: number) => ({
+          id: msg._id || index + 1,
+          text: msg.content,
+          time: new Date(msg.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+          isMe: true, // Simplified for now
+          type: 'text'
+        }));
+        setMessages(formattedMessages);
+        await AsyncStorage.setItem(`chat_${contactId}`, JSON.stringify(formattedMessages));
+      }
+    } catch (error) {
+      console.error('Error loading messages:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const sendMessage = async () => {
     if (message.trim()) {
+      const messageText = message.trim();
       const newMessage: Message = {
-        id: messages.length + 1,
-        text: message,
+        id: Date.now(),
+        text: messageText,
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         isMe: true,
         type: 'text'
       };
-      setMessages([...messages, newMessage]);
+      
+      const updatedMessages = [...messages, newMessage];
+      setMessages(updatedMessages);
       setMessage('');
+      
+      // Save to local storage
+      try {
+        await AsyncStorage.setItem(`chat_${contactId}`, JSON.stringify(updatedMessages));
+        
+        // Also save to database
+        await fetch('http://10.0.2.2:5000/api/messages', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            receiver: contactId,
+            content: messageText,
+            messageType: 'text'
+          })
+        });
+      } catch (error) {
+        console.error('Error saving message:', error);
+      }
+      
       setTimeout(() => {
         scrollViewRef.current?.scrollToEnd({ animated: true });
       }, 100);
@@ -175,7 +246,11 @@ export default function ChatConversationScreen() {
         showsVerticalScrollIndicator={false}
         onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
       >
-        {messages.length === 0 ? (
+        {loading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color={colors.primary} />
+          </View>
+        ) : messages.length === 0 ? (
           <View style={styles.emptyStateContainer}>
             <View style={styles.emptyStateIcon}>
               <Ionicons name="chatbubble-outline" size={60} color="#e0e0e0" />
@@ -411,5 +486,11 @@ const styles = StyleSheet.create({
   emptyStateText: {
     fontSize: 16,
     color: '#999',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 50,
   },
 });

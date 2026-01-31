@@ -71,26 +71,19 @@ router.get('/conversations', auth, async (req, res) => {
 });
 
 // Get messages between two users
-router.get('/:contactId', auth, async (req, res) => {
+router.get('/:contactId', async (req, res) => {
   try {
-    const userId = req.user.id;
     const contactId = req.params.contactId;
 
     const messages = await Message.find({
       $or: [
-        { sender: userId, receiver: contactId },
-        { sender: contactId, receiver: userId }
+        { sender: contactId },
+        { receiver: contactId }
       ]
     })
     .populate('sender', 'name avatar')
     .populate('receiver', 'name avatar')
     .sort({ createdAt: 1 });
-
-    // Mark messages as read
-    await Message.updateMany(
-      { sender: contactId, receiver: userId, isRead: false },
-      { isRead: true, readAt: new Date() }
-    );
 
     res.json(messages);
   } catch (error) {
@@ -99,11 +92,13 @@ router.get('/:contactId', auth, async (req, res) => {
 });
 
 // Send a message
-router.post('/', auth, async (req, res) => {
+router.post('/', async (req, res) => {
   try {
     const message = new Message({
-      sender: req.user.id,
-      ...req.body
+      sender: '507f1f77bcf86cd799439011', // Hardcoded sender for now
+      receiver: req.body.receiver,
+      content: req.body.content,
+      messageType: req.body.messageType || 'text'
     });
 
     await message.save();

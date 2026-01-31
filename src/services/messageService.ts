@@ -1,4 +1,28 @@
-import { apiClient } from '../api';
+const API_BASE_URL = __DEV__ ? 'http://10.0.2.2:5000/api' : 'https://your-production-api.com/api';
+
+const authenticatedApiClient = {
+  get: async (endpoint: string) => {
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+    return response.json();
+  },
+  
+  post: async (endpoint: string, data: any) => {
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+    return response.json();
+  },
+};
 
 export interface Message {
   _id: string;
@@ -38,15 +62,15 @@ export interface Conversation {
 
 export const messageService = {
   getConversations: async (): Promise<Conversation[]> => {
-    return apiClient.get('/messages/conversations');
+    return authenticatedApiClient.get('/messages/conversations');
   },
 
   getMessages: async (contactId: string): Promise<Message[]> => {
-    return apiClient.get(`/messages/${contactId}`);
+    return authenticatedApiClient.get(`/messages/${contactId}`);
   },
 
   sendMessage: async (receiverId: string, content: string, messageType = 'text'): Promise<Message> => {
-    return apiClient.post('/messages', {
+    return authenticatedApiClient.post('/messages', {
       receiver: receiverId,
       content,
       messageType

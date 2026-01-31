@@ -12,8 +12,21 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import BottomNavBar from "../../components/BottomNavBar";
-import { userService, User } from "../../services/userService";
+import { userService } from "../../services/userService";
+import { messageService } from "../../services/messageService";
 import { useAuth } from "../../services/authContext";
+
+interface User {
+  _id: string;
+  name: string;
+  email: string;
+  phone: string;
+  avatar: string;
+  isOnline?: boolean;
+  lastMessage?: string;
+  lastMessageTime?: string;
+  unreadCount?: number;
+}
 
 export default function ChatScreen() {
   const router = useRouter();
@@ -27,21 +40,28 @@ export default function ChatScreen() {
 
   const loadUsers = async () => {
     try {
+      const conversations = await messageService.getConversations();
+      setUsers(conversations.map(conv => ({
+        _id: conv.contact._id,
+        name: conv.contact.name,
+        email: conv.contact.email || '',
+        phone: conv.contact.phone || '',
+        avatar: conv.contact.avatar || '',
+        isOnline: true,
+        lastMessage: conv.lastMessage?.content || 'Tap to start conversation',
+        lastMessageTime: conv.lastMessage ? new Date(conv.lastMessage.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '',
+        unreadCount: conv.unreadCount || 0
+      })));
+    } catch (error) {
+      console.error('Error loading conversations:', error);
       const allUsers = await userService.getAllUsers();
       const otherUsers = allUsers.filter(user => user._id !== currentUser?.id);
-      setUsers(otherUsers);
-    } catch (error) {
-      console.error('Error loading users:', error);
-      setUsers([
-        {
-          _id: '1',
-          name: 'Angela Young',
-          email: 'angela@example.com',
-          phone: '+1234567890',
-          avatar: 'specialist-profile1.jpg',
-          isOnline: true
-        }
-      ]);
+      setUsers(otherUsers.map(user => ({
+        ...user,
+        lastMessage: 'Tap to start conversation',
+        lastMessageTime: '',
+        unreadCount: 0
+      })));
     } finally {
       setLoading(false);
     }
@@ -90,12 +110,18 @@ export default function ChatScreen() {
               <View style={styles.messageContent}>
                 <View style={styles.messageHeader}>
                   <Text style={styles.senderName}>{user.name}</Text>
-                  <Text style={styles.messageTime}>Online</Text>
+                  <Text style={styles.messageTime}>{user.lastMessageTime}</Text>
                 </View>
                 <Text style={styles.messageText} numberOfLines={1}>
-                  Tap to start conversation
+                  {user.lastMessage}
                 </Text>
               </View>
+              
+              {user.unreadCount > 0 && (
+                <View style={styles.unreadBadge}>
+                  <Text style={styles.unreadText}>{user.unreadCount}</Text>
+                </View>
+              )}
             </TouchableOpacity>
           ))
         )}

@@ -173,6 +173,10 @@ const seedData = async () => {
     const createdUsers = await User.insertMany(users);
     console.log('Sample users seeded successfully');
 
+    // Clear existing messages
+    await Message.deleteMany({});
+    console.log('Messages cleared');
+
     console.log('Database seeding completed successfully!');
     process.exit(0);
   } catch (error) {
