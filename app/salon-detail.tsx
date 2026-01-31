@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -8,24 +8,60 @@ import {
   ScrollView,
   Image,
   Linking,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
+import { salonService, Salon } from '../src/services/salonService';
 
 export default function SalonDetailScreen() {
   const router = useRouter();
   const { salonId } = useLocalSearchParams();
   const [activeTab, setActiveTab] = useState('About');
+  const [salon, setSalon] = useState<Salon | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const salonData = {
-    name: 'Bella Rinova',
-    address: '6391 Elgin St, Celina, Delaware 10299',
-    rating: 4.5,
-    reviews: 179,
-    status: 'Open',
-    image: require('../assets/images/salon-image2.jpg'),
-    phone: '+1 302 555 0199',
+  useEffect(() => {
+    if (salonId) {
+      loadSalonDetails(salonId as string);
+    }
+  }, [salonId]);
+
+  const loadSalonDetails = async (id: string) => {
+    try {
+      setLoading(true);
+      const salonData = await salonService.getSalonById(id);
+      setSalon(salonData);
+    } catch (error) {
+      console.error('Error loading salon details:', error);
+      // Fallback to static data
+      setSalon({
+        _id: id,
+        name: 'Bella Rinova',
+        address: '6391 Elgin St, Celina, Delaware 10299',
+        location: { latitude: -37.8136, longitude: 144.9631 },
+        phone: '+1 302 555 0199',
+        email: 'info@bellarinova.com',
+        rating: 4.5,
+        image: 'salon-image2.jpg',
+        services: [
+          { name: 'Haircut', price: 45, duration: 60 },
+          { name: 'Hair Styling', price: 35, duration: 45 }
+        ],
+        workingHours: {
+          monday: { open: '8:30', close: '21:30' },
+          tuesday: { open: '8:30', close: '21:30' },
+          wednesday: { open: '8:30', close: '21:30' },
+          thursday: { open: '8:30', close: '21:30' },
+          friday: { open: '8:30', close: '21:30' },
+          saturday: { open: '9:00', close: '13:00' },
+          sunday: { open: '9:00', close: '13:00' }
+        }
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const specialists = [
@@ -54,13 +90,41 @@ export default function SalonDetailScreen() {
   };
 
   const handleCall = () => {
-    Linking.openURL(`tel:${salonData.phone}`);
+    if (salon?.phone) {
+      Linking.openURL(`tel:${salon.phone}`);
+    }
   };
 
   const handleDirections = () => {
-    const url = `https://maps.google.com/?q=${encodeURIComponent(salonData.address)}`;
-    Linking.openURL(url);
+    if (salon?.address) {
+      const url = `https://maps.google.com/?q=${encodeURIComponent(salon.address)}`;
+      Linking.openURL(url);
+    }
   };
+
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#6366f1" />
+          <Text style={styles.loadingText}>Loading salon details...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (!salon) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>Salon not found</Text>
+          <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+            <Text style={styles.backButtonText}>Go Back</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -69,7 +133,7 @@ export default function SalonDetailScreen() {
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Header Image */}
         <View style={styles.imageContainer}>
-          <Image source={salonData.image} style={styles.headerImage} />
+          <Image source={require('../assets/images/salon-image2.jpg')} style={styles.headerImage} />
           <View style={styles.headerOverlay}>
             <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
               <Ionicons name="arrow-back" size={24} color="#fff" />
@@ -96,18 +160,18 @@ export default function SalonDetailScreen() {
         <View style={styles.salonInfo}>
           <View style={styles.salonHeader}>
             <View style={styles.salonTitleContainer}>
-              <Text style={styles.salonName}>{salonData.name}</Text>
+              <Text style={styles.salonName}>{salon.name}</Text>
               <View style={styles.statusBadge}>
-                <Text style={styles.statusText}>{salonData.status}</Text>
+                <Text style={styles.statusText}>Open</Text>
               </View>
             </View>
-            <Text style={styles.salonAddress}>{salonData.address}</Text>
+            <Text style={styles.salonAddress}>{salon.address}</Text>
             
             <View style={styles.ratingContainer}>
               <View style={styles.stars}>
-                {renderStars(salonData.rating)}
+                {renderStars(salon.rating)}
               </View>
-              <Text style={styles.ratingText}>({salonData.reviews} Reviews)</Text>
+              <Text style={styles.ratingText}>(179 Reviews)</Text>
             </View>
           </View>
 
@@ -183,13 +247,13 @@ export default function SalonDetailScreen() {
               <View style={styles.infoSection}>
                 <Text style={styles.infoTitle}>Contact</Text>
                 <TouchableOpacity onPress={handleCall}>
-                  <Text style={styles.contactText}>{salonData.phone}</Text>
+                  <Text style={styles.contactText}>{salon.phone}</Text>
                 </TouchableOpacity>
               </View>
 
               <View style={styles.infoSection}>
                 <Text style={styles.infoTitle}>Address</Text>
-                <Text style={styles.addressText}>{salonData.address}</Text>
+                <Text style={styles.addressText}>{salon.address}</Text>
                 
                 <View style={styles.mapContainer}>
                   <View style={styles.mapPlaceholder}>
@@ -441,6 +505,32 @@ const styles = StyleSheet.create({
   },
   directionsText: {
     color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: '#666',
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  errorText: {
+    fontSize: 18,
+    color: '#666',
+    marginBottom: 20,
+  },
+  backButtonText: {
+    color: '#6366f1',
     fontSize: 16,
     fontWeight: '600',
   },

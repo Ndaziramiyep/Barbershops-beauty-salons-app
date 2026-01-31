@@ -7,6 +7,7 @@ import {
   StatusBar,
   ScrollView,
   Image,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -14,6 +15,7 @@ import { useRouter } from 'expo-router';
 import LocationPermissionModal from '../../components/LocationPermissionModal';
 import { getCurrentLocation, LocationData } from '../../services/locationService';
 import { useAuth } from '../../services/authContext';
+import { salonService, Salon } from '../../services/salonService';
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -21,6 +23,8 @@ export default function HomeScreen() {
   const [showLocationModal, setShowLocationModal] = useState(true);
   const [userLocation, setUserLocation] = useState('Fetching location...');
   const [locationData, setLocationData] = useState<LocationData | null>(null);
+  const [nearestSalon, setNearestSalon] = useState<Salon | null>(null);
+  const [loading, setLoading] = useState(false);
 
   const handleEnableLocation = async () => {
     setShowLocationModal(false);
@@ -28,8 +32,36 @@ export default function HomeScreen() {
     if (location) {
       setLocationData(location);
       setUserLocation(location.address);
+      loadNearestSalon(location.latitude, location.longitude);
     } else {
       setUserLocation('Location unavailable');
+    }
+  };
+
+  const loadNearestSalon = async (latitude: number, longitude: number) => {
+    try {
+      setLoading(true);
+      const salons = await salonService.getNearbySalons(latitude, longitude, 10);
+      if (salons.length > 0) {
+        setNearestSalon(salons[0]);
+      }
+    } catch (error) {
+      console.error('Error loading nearest salon:', error);
+      // Fallback to static data
+      setNearestSalon({
+        _id: '1',
+        name: 'Bella Rinova',
+        address: '123 Lygon St, Carlton Melbourne 3053',
+        location: { latitude: -37.8136, longitude: 144.9631 },
+        phone: '+61 3 9347 1234',
+        email: 'info@bellarinova.com',
+        rating: 4.8,
+        image: 'salon-image1.png',
+        services: [],
+        workingHours: {}
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -126,30 +158,45 @@ export default function HomeScreen() {
             </TouchableOpacity>
           </View>
           
-          <TouchableOpacity style={styles.salonCard}>
-            <Image
-              source={require('../../../assets/images/salon-image1.png')}
-              style={styles.salonImage}
-            />
-            <View style={styles.salonInfo}>
-              <View style={styles.salonHeader}>
-                <Text style={styles.salonName}>Bella Rinova</Text>
-                <View style={styles.rating}>
-                  {[1,2,3,4,5].map((star) => (
-                    <Ionicons key={star} name="star" size={14} color="#FFD700" />
-                  ))}
-                </View>
-              </View>
-              <View style={styles.addressRow}>
-                <Text style={styles.salonAddress}>123 Lygon St, Carlton Melbourne 3053</Text>
-                <View style={styles.distanceContainer}>
-                  <Ionicons name="location" size={14} color="#666" />
-                  <Text style={styles.distance}>5 km</Text>
-                </View>
-              </View>
+          {loading ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color="#6366f1" />
             </View>
-          </TouchableOpacity>
-        </View>
+          ) : nearestSalon ? (
+            <TouchableOpacity 
+              style={styles.salonCard}
+              onPress={() => router.push(`/salon-detail?salonId=${nearestSalon._id}`)}
+            >
+              <Image
+                source={require('../../../assets/images/salon-image1.png')}
+                style={styles.salonImage}
+              />
+              <View style={styles.salonInfo}>
+                <View style={styles.salonHeader}>
+                  <Text style={styles.salonName}>{nearestSalon.name}</Text>
+                  <View style={styles.rating}>
+                    {[1,2,3,4,5].map((star) => (
+                      <Ionicons 
+                        key={star} 
+                        name={star <= Math.floor(nearestSalon.rating) ? "star" : "star-outline"} 
+                        size={14} 
+                        color="#FFD700" 
+                      />
+                    ))}
+                  </View>
+                </View>
+                <View style={styles.addressRow}>
+                  <Text style={styles.salonAddress}>{nearestSalon.address}</Text>
+                  <View style={styles.distanceContainer}>
+                    <Ionicons name="location" size={14} color="#666" />
+                    <Text style={styles.distance}>5 km</Text>
+                  </View>
+                </View>
+              </View>
+            </TouchableOpacity>
+          ) : (
+            <Text style={styles.noDataText}>No salons found nearby</Text>
+          )}
       </ScrollView>
 
       {/* Bottom Navigation */}
@@ -371,5 +418,15 @@ const styles = StyleSheet.create({
   },
   navItem: {
     padding: 8,
+  },
+  loadingContainer: {
+    padding: 20,
+    alignItems: 'center',
+  },
+  noDataText: {
+    textAlign: 'center',
+    color: '#666',
+    fontSize: 14,
+    padding: 20,
   },
 });
