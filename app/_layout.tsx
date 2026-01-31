@@ -21,6 +21,7 @@ export default function RootLayout() {
         <Stack.Screen name="booking" />
         <Stack.Screen name="chat" />
         <Stack.Screen name="profile" />
+        <Stack.Screen name="faqs" />
       </Stack>
     </AuthProvider>
   );

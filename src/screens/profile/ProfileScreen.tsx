@@ -35,6 +35,14 @@ export default function ProfileScreen() {
       ]
     );
   };
+
+  const handleMenuPress = (title: string) => {
+    if (title === 'Logout') {
+      handleLogout();
+    } else if (title === 'FAQs') {
+      router.push('/faqs');
+    }
+  };
   const menuItems = [
     {
       id: 1,
@@ -119,7 +127,7 @@ export default function ProfileScreen() {
             <TouchableOpacity 
               key={item.id} 
               style={styles.menuItem}
-              onPress={item.title === 'Logout' ? handleLogout : undefined}
+              onPress={() => handleMenuPress(item.title)}
             >
               <View style={styles.menuLeft}>
                 <Ionicons name={item.icon} size={20} color="#333" />

@@ -131,7 +131,11 @@ export default function SearchScreen() {
         <View style={styles.section}>
           <Text style={styles.resultsTitle}>Result found (248)</Text>
           {searchResults.map((salon) => (
-            <TouchableOpacity key={salon.id} style={styles.salonCard}>
+            <TouchableOpacity 
+              key={salon.id} 
+              style={styles.salonCard}
+              onPress={() => router.push(`/salon-detail?salonId=${salon.id}`)}
+            >
               <Image source={salon.image} style={styles.salonImage} />
               <View style={styles.salonInfo}>
                 <Text style={styles.salonName}>{salon.name}</Text>
