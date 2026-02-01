@@ -18,6 +18,34 @@ const seedData = async () => {
     await Message.deleteMany({});
     console.log('Cleared existing data');
 
+    // Seed sample users first (needed for salon owners)
+    const users = [
+      {
+        name: 'Angela Young',
+        email: 'angela@example.com',
+        password: 'password123',
+        phone: '+1234567890',
+        avatar: 'specialist-profile1.jpg'
+      },
+      {
+        name: 'Steve Didko', 
+        email: 'steve@example.com',
+        password: 'password123',
+        phone: '+1234567891',
+        avatar: 'specialist-profile2.jpg'
+      },
+      {
+        name: 'Maria Garcia',
+        email: 'maria@example.com',
+        password: 'password123',
+        phone: '+1234567892',
+        avatar: 'specialist-profile3.jpg'
+      }
+    ];
+
+    const createdUsers = await User.insertMany(users);
+    console.log('Sample users seeded successfully');
+
     // Seed Salons
     const salons = [
       {
@@ -31,6 +59,7 @@ const seedData = async () => {
         email: 'info@bellarinova.com',
         rating: 4.8,
         image: 'salon-image1.png',
+        ownerId: createdUsers[0]._id,
         services: [
           { name: 'Haircut', price: 45, duration: 60 },
           { name: 'Hair Wash', price: 25, duration: 30 },
@@ -57,6 +86,7 @@ const seedData = async () => {
         email: 'contact@galleriahair.com',
         rating: 4.6,
         image: 'salon-image2.jpg',
+        ownerId: createdUsers[1]._id,
         services: [
           { name: 'Premium Cut', price: 65, duration: 75 },
           { name: 'Color Treatment', price: 120, duration: 120 },
@@ -83,6 +113,7 @@ const seedData = async () => {
         email: 'hello@styleandgrace.com',
         rating: 4.9,
         image: 'salon-image4.jpg',
+        ownerId: createdUsers[2]._id,
         services: [
           { name: 'Bridal Makeup', price: 200, duration: 180 },
           { name: 'Manicure', price: 40, duration: 60 },
@@ -152,26 +183,7 @@ const seedData = async () => {
     await FAQ.insertMany(faqs);
     console.log('FAQs seeded successfully');
 
-    // Seed sample users for messaging
-    const users = [
-      {
-        name: 'Angela Young',
-        email: 'angela@example.com',
-        password: 'password123',
-        phone: '+1234567890',
-        avatar: 'specialist-profile1.jpg'
-      },
-      {
-        name: 'Steve Didko', 
-        email: 'steve@example.com',
-        password: 'password123',
-        phone: '+1234567891',
-        avatar: 'specialist-profile2.jpg'
-      }
-    ];
 
-    const createdUsers = await User.insertMany(users);
-    console.log('Sample users seeded successfully');
 
     // Clear existing messages
     await Message.deleteMany({});
