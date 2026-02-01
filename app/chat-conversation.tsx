@@ -73,7 +73,7 @@ export default function ChatConversationScreen() {
         },
         {
           id: 5,
-          text: "",
+          text: "Voice message",
           time: "06:25 AM",
           isMe: false,
           type: 'voice',
@@ -108,13 +108,18 @@ export default function ChatConversationScreen() {
         const chatMessages = await response.json();
         const currentUserId = '507f1f77bcf86cd799439011'; // This should come from auth context
         
-        const formattedMessages = chatMessages.map((msg: any, index: number) => ({
-          id: msg._id || index + 1,
-          text: msg.content,
-          time: new Date(msg.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
-          isMe: msg.sender && msg.sender._id === currentUserId, // Safe check for sender
-          type: msg.messageType || 'text'
-        }));
+        const formattedMessages = chatMessages.map((msg: any, index: number) => {
+          const currentUserId = '507f1f77bcf86cd799439011'; // This should come from auth context
+          const isMyMessage = msg.sender && msg.sender._id === currentUserId;
+          
+          return {
+            id: msg._id || index + 1,
+            text: msg.content,
+            time: new Date(msg.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+            isMe: isMyMessage,
+            type: msg.messageType || 'text'
+          };
+        });
         setMessages(formattedMessages);
         await AsyncStorage.setItem(`chat_${contactId}`, JSON.stringify(formattedMessages));
       }
