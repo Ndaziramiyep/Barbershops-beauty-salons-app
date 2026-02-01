@@ -98,7 +98,12 @@ router.post('/login', async (req, res) => {
 
     // Generate JWT
     const token = jwt.sign(
-      { userId: user._id },
+      { 
+        userId: user._id,
+        id: user._id,
+        role: user.role,
+        salonId: user.salonId
+      },
       process.env.JWT_SECRET,
       { expiresIn: '7d' }
     );
@@ -109,7 +114,9 @@ router.post('/login', async (req, res) => {
         id: user._id,
         name: user.name,
         email: user.email,
-        phone: user.phone
+        phone: user.phone,
+        role: user.role,
+        salonId: user.salonId
       }
     });
   } catch (error) {
@@ -143,7 +150,12 @@ router.post('/verify-otp', async (req, res) => {
 
     // Generate JWT
     const token = jwt.sign(
-      { userId: user._id },
+      { 
+        userId: user._id,
+        id: user._id,
+        role: user.role,
+        salonId: user.salonId
+      },
       process.env.JWT_SECRET,
       { expiresIn: '7d' }
     );
@@ -154,7 +166,9 @@ router.post('/verify-otp', async (req, res) => {
         id: user._id,
         name: user.name,
         email: user.email,
-        phone: user.phone
+        phone: user.phone,
+        role: user.role,
+        salonId: user.salonId
       }
     });
   } catch (error) {
