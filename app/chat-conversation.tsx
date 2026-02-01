@@ -110,8 +110,8 @@ export default function ChatConversationScreen() {
         
         const formattedMessages = chatMessages.map((msg: any, index: number) => {
           const currentUserId = '507f1f77bcf86cd799439011';
-          // Force messages to be treated as sent (blue, right side)
-          const isMyMessage = true; // All messages appear as sent for now
+          // Properly check if message was sent by current user
+          const isMyMessage = msg.sender && msg.sender._id === currentUserId;
           
           return {
             id: msg._id || index + 1,
