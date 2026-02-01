@@ -40,6 +40,7 @@ export default function ChatConversationScreen() {
   useEffect(() => {
     if (contactId) {
       loadMessages();
+      markMessagesAsRead();
     } else {
       // Add sample messages to demonstrate the styling
       const sampleMessages: Message[] = [
@@ -123,6 +124,20 @@ export default function ChatConversationScreen() {
       console.error('Error loading messages:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const markMessagesAsRead = async () => {
+    if (!contactId) return;
+    try {
+      await fetch(`http://10.0.2.2:5000/api/messages/${contactId}/read`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+    } catch (error) {
+      console.error('Error marking messages as read:', error);
     }
   };
 

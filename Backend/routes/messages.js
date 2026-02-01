@@ -112,4 +112,83 @@ router.post('/', async (req, res) => {
   }
 });
 
+// Get my conversations (users I've messaged)
+router.get('/my-conversations', async (req, res) => {
+  try {
+    const currentUserId = '507f1f77bcf86cd799439011'; // Should come from auth
+    
+    const conversations = await Message.aggregate([
+      {
+        $match: {
+          $or: [
+            { sender: new mongoose.Types.ObjectId(currentUserId) },
+            { receiver: new mongoose.Types.ObjectId(currentUserId) }
+          ]
+        }
+      },
+      {
+        $group: {
+          _id: {
+            $cond: [
+              { $eq: ['$sender', new mongoose.Types.ObjectId(currentUserId)] },
+              '$receiver',
+              '$sender'
+            ]
+          },
+          lastMessage: { $last: '$$ROOT' }
+        }
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: '_id',
+          foreignField: '_id',
+          as: 'user'
+        }
+      },
+      {
+        $unwind: '$user'
+      },
+      {
+        $project: {
+          _id: '$user._id',
+          name: '$user.name',
+          email: '$user.email',
+          phone: '$user.phone',
+          avatar: '$user.avatar',
+          isOnline: false,
+          lastMessage: '$lastMessage.content',
+          lastMessageTime: '$lastMessage.createdAt',
+          unreadCount: 0
+        }
+      }
+    ]);
+    
+    res.json(conversations);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Mark messages as read
+router.patch('/:contactId/read', async (req, res) => {
+  try {
+    const contactId = req.params.contactId;
+    const currentUserId = '507f1f77bcf86cd799439011'; // Should come from auth
+    
+    await Message.updateMany(
+      {
+        sender: contactId,
+        receiver: currentUserId,
+        isRead: false
+      },
+      { isRead: true }
+    );
+    
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 module.exports = router;

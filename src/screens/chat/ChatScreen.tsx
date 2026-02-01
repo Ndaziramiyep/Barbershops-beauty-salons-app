@@ -39,6 +39,7 @@ export default function ChatScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<User[]>([]);
   const [searchLoading, setSearchLoading] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
 
   useEffect(() => {
     loadUsers();
@@ -67,14 +68,16 @@ export default function ChatScreen() {
       })).filter(user => user._id !== currentUser?.id));
     } catch (error) {
       console.error('Error loading conversations:', error);
-      const allUsers = await userService.getAllUsers();
-      const otherUsers = allUsers.filter(user => user._id !== currentUser?.id);
-      setUsers(otherUsers.map(user => ({
-        ...user,
-        lastMessage: 'Tap to start conversation',
-        lastMessageTime: '',
-        unreadCount: 0
-      })));
+      // Fallback: show users you've messaged before
+      try {
+        const response = await fetch('http://10.0.2.2:5000/api/messages/my-conversations');
+        if (response.ok) {
+          const myConversations = await response.json();
+          setUsers(myConversations.filter(user => user._id !== currentUser?.id));
+        }
+      } catch (fallbackError) {
+        console.error('Fallback error:', fallbackError);
+      }
     } finally {
       setLoading(false);
     }
@@ -112,7 +115,7 @@ export default function ChatScreen() {
     <SafeAreaView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>2 new message</Text>
+        <Text style={styles.headerTitle}>New message</Text>
         <View style={styles.headerIcons}>
           <TouchableOpacity 
             style={styles.iconButton}
@@ -120,7 +123,10 @@ export default function ChatScreen() {
           >
             <Ionicons name="search-outline" size={24} color="#333" />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.iconButton}>
+          <TouchableOpacity 
+            style={styles.iconButton}
+            onPress={() => setShowSettings(true)}
+          >
             <Ionicons name="settings-outline" size={24} color="#333" />
           </TouchableOpacity>
         </View>
@@ -237,6 +243,72 @@ export default function ChatScreen() {
                 <Text style={styles.noResultsText}>Start typing to search users</Text>
               </View>
             )}
+          </ScrollView>
+        </SafeAreaView>
+      </Modal>
+
+      {/* Settings Modal */}
+      <Modal
+        visible={showSettings}
+        animationType="slide"
+        presentationStyle="pageSheet"
+      >
+        <SafeAreaView style={styles.settingsContainer}>
+          <View style={styles.settingsHeader}>
+            <TouchableOpacity onPress={() => setShowSettings(false)}>
+              <Ionicons name="close" size={24} color="#333" />
+            </TouchableOpacity>
+            <Text style={styles.settingsTitle}>Settings</Text>
+            <View style={{ width: 24 }} />
+          </View>
+          
+          <ScrollView style={styles.settingsContent}>
+            <TouchableOpacity style={styles.settingsItem}>
+              <Ionicons name="person-outline" size={24} color="#666" />
+              <Text style={styles.settingsText}>Profile Settings</Text>
+              <Ionicons name="chevron-forward" size={20} color="#999" />
+            </TouchableOpacity>
+            
+            <TouchableOpacity style={styles.settingsItem}>
+              <Ionicons name="notifications-outline" size={24} color="#666" />
+              <Text style={styles.settingsText}>Notifications</Text>
+              <Ionicons name="chevron-forward" size={20} color="#999" />
+            </TouchableOpacity>
+            
+            <TouchableOpacity style={styles.settingsItem}>
+              <Ionicons name="lock-closed-outline" size={24} color="#666" />
+              <Text style={styles.settingsText}>Privacy & Security</Text>
+              <Ionicons name="chevron-forward" size={20} color="#999" />
+            </TouchableOpacity>
+            
+            <TouchableOpacity style={styles.settingsItem}>
+              <Ionicons name="moon-outline" size={24} color="#666" />
+              <Text style={styles.settingsText}>Dark Mode</Text>
+              <Ionicons name="chevron-forward" size={20} color="#999" />
+            </TouchableOpacity>
+            
+            <TouchableOpacity style={styles.settingsItem}>
+              <Ionicons name="language-outline" size={24} color="#666" />
+              <Text style={styles.settingsText}>Language</Text>
+              <Ionicons name="chevron-forward" size={20} color="#999" />
+            </TouchableOpacity>
+            
+            <TouchableOpacity style={styles.settingsItem}>
+              <Ionicons name="help-circle-outline" size={24} color="#666" />
+              <Text style={styles.settingsText}>Help & Support</Text>
+              <Ionicons name="chevron-forward" size={20} color="#999" />
+            </TouchableOpacity>
+            
+            <TouchableOpacity style={styles.settingsItem}>
+              <Ionicons name="information-circle-outline" size={24} color="#666" />
+              <Text style={styles.settingsText}>About</Text>
+              <Ionicons name="chevron-forward" size={20} color="#999" />
+            </TouchableOpacity>
+            
+            <TouchableOpacity style={[styles.settingsItem, styles.logoutItem]}>
+              <Ionicons name="log-out-outline" size={24} color="#ef4444" />
+              <Text style={[styles.settingsText, styles.logoutText]}>Logout</Text>
+            </TouchableOpacity>
           </ScrollView>
         </SafeAreaView>
       </Modal>
@@ -430,5 +502,48 @@ const styles = StyleSheet.create({
   noResultsText: {
     fontSize: 16,
     color: '#999',
+  },
+  settingsContainer: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+  settingsHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  settingsTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#333',
+  },
+  settingsContent: {
+    flex: 1,
+  },
+  settingsItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  settingsText: {
+    flex: 1,
+    fontSize: 16,
+    color: '#333',
+    marginLeft: 16,
+  },
+  logoutItem: {
+    marginTop: 20,
+    borderTopWidth: 1,
+    borderTopColor: '#f0f0f0',
+  },
+  logoutText: {
+    color: '#ef4444',
   },
 });
