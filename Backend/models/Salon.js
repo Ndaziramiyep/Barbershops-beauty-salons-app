@@ -51,6 +51,19 @@ const salonSchema = new mongoose.Schema({
     friday: { open: String, close: String },
     saturday: { open: String, close: String },
     sunday: { open: String, close: String }
+  },
+  ownerId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  isApproved: {
+    type: Boolean,
+    default: false
+  },
+  isActive: {
+    type: Boolean,
+    default: true
   }
 }, {
   timestamps: true

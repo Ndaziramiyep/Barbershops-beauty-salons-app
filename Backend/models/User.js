@@ -41,6 +41,16 @@ const userSchema = new mongoose.Schema({
   otpExpires: {
     type: Date,
     default: null
+  },
+  role: {
+    type: String,
+    enum: ['customer', 'salon_owner', 'admin'],
+    default: 'customer'
+  },
+  salonId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Salon',
+    default: null
   }
 }, {
   timestamps: true
