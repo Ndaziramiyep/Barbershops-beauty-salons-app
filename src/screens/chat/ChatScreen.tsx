@@ -11,6 +11,8 @@ import {
   ActivityIndicator,
   TextInput,
   Modal,
+  Alert,
+  Switch,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import BottomNavBar from "../../components/BottomNavBar";
@@ -40,6 +42,8 @@ export default function ChatScreen() {
   const [searchResults, setSearchResults] = useState<User[]>([]);
   const [searchLoading, setSearchLoading] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [darkMode, setDarkMode] = useState(false);
+  const [notifications, setNotifications] = useState(true);
 
   useEffect(() => {
     loadUsers();
@@ -109,6 +113,45 @@ export default function ChatScreen() {
     setSearchQuery('');
     setSearchResults([]);
     router.push(`/chat-conversation?contactName=${encodeURIComponent(user.name)}&contactId=${user._id}`);
+  };
+
+  const handleLogout = () => {
+    Alert.alert(
+      'Logout',
+      'Are you sure you want to logout?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Logout', 
+          style: 'destructive',
+          onPress: () => {
+            setShowSettings(false);
+            router.push('/');
+          }
+        }
+      ]
+    );
+  };
+
+  const handleProfileSettings = () => {
+    setShowSettings(false);
+    router.push('/profile');
+  };
+
+  const handlePrivacySecurity = () => {
+    Alert.alert('Privacy & Security', 'Privacy settings will be available in future updates.');
+  };
+
+  const handleLanguage = () => {
+    Alert.alert('Language', 'Language settings will be available in future updates.');
+  };
+
+  const handleHelp = () => {
+    Alert.alert('Help & Support', 'Contact support at support@salonease.com');
+  };
+
+  const handleAbout = () => {
+    Alert.alert('About', 'SalonEase v1.0.0\nYour beauty booking companion');
   };
 
   return (
@@ -263,49 +306,59 @@ export default function ChatScreen() {
           </View>
           
           <ScrollView style={styles.settingsContent}>
-            <TouchableOpacity style={styles.settingsItem}>
+            <TouchableOpacity style={styles.settingsItem} onPress={handleProfileSettings}>
               <Ionicons name="person-outline" size={24} color="#666" />
               <Text style={styles.settingsText}>Profile Settings</Text>
               <Ionicons name="chevron-forward" size={20} color="#999" />
             </TouchableOpacity>
             
-            <TouchableOpacity style={styles.settingsItem}>
+            <View style={styles.settingsItem}>
               <Ionicons name="notifications-outline" size={24} color="#666" />
               <Text style={styles.settingsText}>Notifications</Text>
-              <Ionicons name="chevron-forward" size={20} color="#999" />
-            </TouchableOpacity>
+              <Switch
+                value={notifications}
+                onValueChange={setNotifications}
+                trackColor={{ false: '#e0e0e0', true: '#6366f1' }}
+                thumbColor={notifications ? '#fff' : '#f4f3f4'}
+              />
+            </View>
             
-            <TouchableOpacity style={styles.settingsItem}>
+            <TouchableOpacity style={styles.settingsItem} onPress={handlePrivacySecurity}>
               <Ionicons name="lock-closed-outline" size={24} color="#666" />
               <Text style={styles.settingsText}>Privacy & Security</Text>
               <Ionicons name="chevron-forward" size={20} color="#999" />
             </TouchableOpacity>
             
-            <TouchableOpacity style={styles.settingsItem}>
+            <View style={styles.settingsItem}>
               <Ionicons name="moon-outline" size={24} color="#666" />
               <Text style={styles.settingsText}>Dark Mode</Text>
-              <Ionicons name="chevron-forward" size={20} color="#999" />
-            </TouchableOpacity>
+              <Switch
+                value={darkMode}
+                onValueChange={setDarkMode}
+                trackColor={{ false: '#e0e0e0', true: '#6366f1' }}
+                thumbColor={darkMode ? '#fff' : '#f4f3f4'}
+              />
+            </View>
             
-            <TouchableOpacity style={styles.settingsItem}>
+            <TouchableOpacity style={styles.settingsItem} onPress={handleLanguage}>
               <Ionicons name="language-outline" size={24} color="#666" />
               <Text style={styles.settingsText}>Language</Text>
               <Ionicons name="chevron-forward" size={20} color="#999" />
             </TouchableOpacity>
             
-            <TouchableOpacity style={styles.settingsItem}>
+            <TouchableOpacity style={styles.settingsItem} onPress={handleHelp}>
               <Ionicons name="help-circle-outline" size={24} color="#666" />
               <Text style={styles.settingsText}>Help & Support</Text>
               <Ionicons name="chevron-forward" size={20} color="#999" />
             </TouchableOpacity>
             
-            <TouchableOpacity style={styles.settingsItem}>
+            <TouchableOpacity style={styles.settingsItem} onPress={handleAbout}>
               <Ionicons name="information-circle-outline" size={24} color="#666" />
               <Text style={styles.settingsText}>About</Text>
               <Ionicons name="chevron-forward" size={20} color="#999" />
             </TouchableOpacity>
             
-            <TouchableOpacity style={[styles.settingsItem, styles.logoutItem]}>
+            <TouchableOpacity style={[styles.settingsItem, styles.logoutItem]} onPress={handleLogout}>
               <Ionicons name="log-out-outline" size={24} color="#ef4444" />
               <Text style={[styles.settingsText, styles.logoutText]}>Logout</Text>
             </TouchableOpacity>
