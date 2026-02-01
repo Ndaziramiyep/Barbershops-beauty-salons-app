@@ -19,7 +19,7 @@ const messageSchema = new mongoose.Schema({
   },
   messageType: {
     type: String,
-    enum: ['text', 'image', 'voice', 'video', 'file', 'location'],
+    enum: ['text', 'image', 'voice', 'video', 'file', 'location', 'call'],
     default: 'text'
   },
   fileUrl: {
@@ -27,8 +27,16 @@ const messageSchema = new mongoose.Schema({
     default: ''
   },
   duration: {
-    type: Number, // for voice/video messages in seconds
-    default: 0
+    type: String, // for voice/video/call messages
+    default: ''
+  },
+  callType: {
+    type: String,
+    enum: ['voice', 'video']
+  },
+  callStatus: {
+    type: String,
+    enum: ['missed', 'answered', 'declined']
   },
   location: {
     latitude: Number,

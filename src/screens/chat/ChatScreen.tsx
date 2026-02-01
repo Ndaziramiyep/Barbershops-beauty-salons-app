@@ -158,7 +158,7 @@ export default function ChatScreen() {
     <SafeAreaView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>New message</Text>
+        <Text style={styles.headerTitle}>New messages</Text>
         <View style={styles.headerIcons}>
           <TouchableOpacity 
             style={styles.iconButton}

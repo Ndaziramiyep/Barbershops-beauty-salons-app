@@ -24,8 +24,10 @@ interface Message {
   text?: string;
   time: string;
   isMe: boolean;
-  type: 'text' | 'voice' | 'image';
+  type: 'text' | 'voice' | 'image' | 'call';
   duration?: string;
+  callType?: 'voice' | 'video';
+  callStatus?: 'missed' | 'answered' | 'declined';
 }
 
 export default function ChatConversationScreen() {
@@ -107,15 +109,19 @@ export default function ChatConversationScreen() {
         const currentUserId = '507f1f77bcf86cd799439011';
         
         const formattedMessages = chatMessages.map((msg: any, index: number) => {
-          // For testing: alternate messages as sent/received
-          const isMyMessage = index % 2 === 0; // Every other message is "mine"
+          const currentUserId = '507f1f77bcf86cd799439011';
+          // Force messages to be treated as sent (blue, right side)
+          const isMyMessage = true; // All messages appear as sent for now
           
           return {
             id: msg._id || index + 1,
             text: msg.content,
             time: new Date(msg.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
             isMe: isMyMessage,
-            type: msg.messageType || 'text'
+            type: msg.messageType || 'text',
+            callType: msg.callType,
+            callStatus: msg.callStatus,
+            duration: msg.duration
           };
         });
         setMessages(formattedMessages);
@@ -187,11 +193,81 @@ export default function ChatConversationScreen() {
     }
   };
 
-  const handleVoiceCall = () => {
+  const handleVoiceCall = async () => {
+    // Record call in messages
+    const callMessage: Message = {
+      id: Date.now(),
+      text: 'Voice call',
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      isMe: true,
+      type: 'call',
+      callType: 'voice',
+      callStatus: 'answered',
+      duration: '2:34'
+    };
+    
+    const updatedMessages = [...messages, callMessage];
+    setMessages(updatedMessages);
+    
+    // Save call to database
+    try {
+      await fetch('http://10.0.2.2:5000/api/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          receiver: contactId,
+          content: 'Voice call',
+          messageType: 'call',
+          callType: 'voice',
+          callStatus: 'answered',
+          duration: '2:34'
+        })
+      });
+    } catch (error) {
+      console.error('Error saving call record:', error);
+    }
+    
     router.push(`/voice-call?contactName=${encodeURIComponent(contactName as string || 'Angela Young')}`);
   };
 
-  const handleVideoCall = () => {
+  const handleVideoCall = async () => {
+    // Record call in messages
+    const callMessage: Message = {
+      id: Date.now(),
+      text: 'Video call',
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      isMe: true,
+      type: 'call',
+      callType: 'video',
+      callStatus: 'answered',
+      duration: '5:12'
+    };
+    
+    const updatedMessages = [...messages, callMessage];
+    setMessages(updatedMessages);
+    
+    // Save call to database
+    try {
+      await fetch('http://10.0.2.2:5000/api/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          receiver: contactId,
+          content: 'Video call',
+          messageType: 'call',
+          callType: 'video',
+          callStatus: 'answered',
+          duration: '5:12'
+        })
+      });
+    } catch (error) {
+      console.error('Error saving call record:', error);
+    }
+    
     router.push(`/video-call?contactName=${encodeURIComponent(contactName as string || 'Angela Young')}`);
   };
 
@@ -225,6 +301,37 @@ export default function ChatConversationScreen() {
   };
 
   const renderMessage = (msg: Message) => {
+    if (msg.type === 'call') {
+      return (
+        <View key={msg.id} style={[styles.messageContainer, msg.isMe ? styles.myMessage : styles.otherMessage]}>
+          {!msg.isMe && (
+            <Image 
+              source={require('../assets/images/specialist-profile1.jpg')} 
+              style={styles.messageAvatar} 
+            />
+          )}
+          <View style={[styles.messageBubble, msg.isMe ? styles.myBubble : styles.otherBubble]}>
+            <View style={styles.callMessage}>
+              <Ionicons 
+                name={msg.callType === 'video' ? 'videocam' : 'call'} 
+                size={16} 
+                color={msg.isMe ? '#fff' : '#6366f1'} 
+              />
+              <Text style={[styles.callText, msg.isMe ? styles.myMessageText : styles.otherMessageText]}>
+                {msg.callType === 'video' ? 'Video call' : 'Voice call'}
+              </Text>
+              <Text style={[styles.callDuration, msg.isMe ? styles.myMessageText : styles.otherMessageText]}>
+                {msg.duration}
+              </Text>
+            </View>
+            <Text style={[styles.messageTime, msg.isMe ? styles.myMessageTime : styles.otherMessageTime]}>
+              {msg.time}
+            </Text>
+          </View>
+        </View>
+      );
+    }
+
     if (msg.type === 'voice') {
       return (
         <View key={msg.id} style={[styles.messageContainer, msg.isMe ? styles.myMessage : styles.otherMessage]}>
@@ -503,6 +610,20 @@ const styles = StyleSheet.create({
     borderRadius: 1,
   },
   voiceDuration: {
+    fontSize: 12,
+    marginLeft: 8,
+  },
+  callMessage: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    minWidth: 120,
+  },
+  callText: {
+    fontSize: 14,
+    marginLeft: 8,
+    flex: 1,
+  },
+  callDuration: {
     fontSize: 12,
     marginLeft: 8,
   },
