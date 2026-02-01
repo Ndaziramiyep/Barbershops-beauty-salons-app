@@ -112,7 +112,7 @@ export default function ChatConversationScreen() {
           id: msg._id || index + 1,
           text: msg.content,
           time: new Date(msg.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
-          isMe: msg.sender._id === currentUserId, // Properly check if message is from current user
+          isMe: msg.sender && msg.sender._id === currentUserId, // Safe check for sender
           type: msg.messageType || 'text'
         }));
         setMessages(formattedMessages);
