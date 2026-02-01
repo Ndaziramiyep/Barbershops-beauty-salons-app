@@ -9,6 +9,8 @@ import {
   TouchableOpacity,
   View,
   ActivityIndicator,
+  TextInput,
+  Modal,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import BottomNavBar from "../../components/BottomNavBar";
@@ -33,9 +35,20 @@ export default function ChatScreen() {
   const { user: currentUser } = useAuth();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showSearch, setShowSearch] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<User[]>([]);
+  const [searchLoading, setSearchLoading] = useState(false);
 
   useEffect(() => {
     loadUsers();
+  }, []);
+
+  useEffect(() => {
+    const unsubscribe = router.addListener?.('focus', () => {
+      loadUsers(); // Refresh conversations when screen comes into focus
+    });
+    return unsubscribe;
   }, []);
 
   const loadUsers = async () => {
@@ -47,11 +60,11 @@ export default function ChatScreen() {
         email: conv.contact.email || '',
         phone: conv.contact.phone || '',
         avatar: conv.contact.avatar || '',
-        isOnline: true,
+        isOnline: false, // Users are offline by default
         lastMessage: conv.lastMessage?.content || 'Tap to start conversation',
         lastMessageTime: conv.lastMessage ? new Date(conv.lastMessage.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '',
         unreadCount: conv.unreadCount || 0
-      })));
+      })).filter(user => user._id !== currentUser?.id));
     } catch (error) {
       console.error('Error loading conversations:', error);
       const allUsers = await userService.getAllUsers();
@@ -67,13 +80,44 @@ export default function ChatScreen() {
     }
   };
 
+  const searchUsers = async (query: string) => {
+    if (!query.trim()) {
+      setSearchResults([]);
+      return;
+    }
+    
+    setSearchLoading(true);
+    try {
+      const allUsers = await userService.getAllUsers();
+      const filtered = allUsers.filter(user => 
+        user._id !== currentUser?.id &&
+        user.name.toLowerCase().includes(query.toLowerCase())
+      );
+      setSearchResults(filtered);
+    } catch (error) {
+      console.error('Error searching users:', error);
+    } finally {
+      setSearchLoading(false);
+    }
+  };
+
+  const handleSearchUser = (user: User) => {
+    setShowSearch(false);
+    setSearchQuery('');
+    setSearchResults([]);
+    router.push(`/chat-conversation?contactName=${encodeURIComponent(user.name)}&contactId=${user._id}`);
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>2 new message</Text>
         <View style={styles.headerIcons}>
-          <TouchableOpacity style={styles.iconButton}>
+          <TouchableOpacity 
+            style={styles.iconButton}
+            onPress={() => setShowSearch(true)}
+          >
             <Ionicons name="search-outline" size={24} color="#333" />
           </TouchableOpacity>
           <TouchableOpacity style={styles.iconButton}>
@@ -126,6 +170,76 @@ export default function ChatScreen() {
           ))
         )}
       </ScrollView>
+
+      {/* Search Modal */}
+      <Modal
+        visible={showSearch}
+        animationType="slide"
+        presentationStyle="pageSheet"
+      >
+        <SafeAreaView style={styles.searchContainer}>
+          <View style={styles.searchHeader}>
+            <TouchableOpacity 
+              onPress={() => {
+                setShowSearch(false);
+                setSearchQuery('');
+                setSearchResults([]);
+              }}
+            >
+              <Ionicons name="close" size={24} color="#333" />
+            </TouchableOpacity>
+            <Text style={styles.searchTitle}>Search Users</Text>
+            <View style={{ width: 24 }} />
+          </View>
+          
+          <View style={styles.searchInputContainer}>
+            <Ionicons name="search" size={20} color="#999" />
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Search by name..."
+              value={searchQuery}
+              onChangeText={(text) => {
+                setSearchQuery(text);
+                searchUsers(text);
+              }}
+              autoFocus
+            />
+          </View>
+          
+          <ScrollView style={styles.searchResults}>
+            {searchLoading ? (
+              <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color="#6366f1" />
+              </View>
+            ) : searchResults.length > 0 ? (
+              searchResults.map((user) => (
+                <TouchableOpacity 
+                  key={user._id}
+                  style={styles.searchResultItem}
+                  onPress={() => handleSearchUser(user)}
+                >
+                  <Image 
+                    source={require("../../../assets/images/specialist-profile1.jpg")} 
+                    style={styles.searchAvatar} 
+                  />
+                  <View style={styles.searchUserInfo}>
+                    <Text style={styles.searchUserName}>{user.name}</Text>
+                    <Text style={styles.searchUserEmail}>{user.email}</Text>
+                  </View>
+                </TouchableOpacity>
+              ))
+            ) : searchQuery.length > 0 ? (
+              <View style={styles.noResultsContainer}>
+                <Text style={styles.noResultsText}>No users found</Text>
+              </View>
+            ) : (
+              <View style={styles.noResultsContainer}>
+                <Text style={styles.noResultsText}>Start typing to search users</Text>
+              </View>
+            )}
+          </ScrollView>
+        </SafeAreaView>
+      </Modal>
 
       <BottomNavBar />
     </SafeAreaView>
@@ -246,5 +360,75 @@ const styles = StyleSheet.create({
   loadingContainer: {
     padding: 20,
     alignItems: 'center',
+  },
+  searchContainer: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+  searchHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  searchTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#333',
+  },
+  searchInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  searchInput: {
+    flex: 1,
+    marginLeft: 12,
+    fontSize: 16,
+    color: '#333',
+  },
+  searchResults: {
+    flex: 1,
+  },
+  searchResultItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  searchAvatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    marginRight: 12,
+  },
+  searchUserInfo: {
+    flex: 1,
+  },
+  searchUserName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 2,
+  },
+  searchUserEmail: {
+    fontSize: 14,
+    color: '#666',
+  },
+  noResultsContainer: {
+    padding: 40,
+    alignItems: 'center',
+  },
+  noResultsText: {
+    fontSize: 16,
+    color: '#999',
   },
 });

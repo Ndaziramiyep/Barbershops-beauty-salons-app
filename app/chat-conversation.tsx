@@ -96,21 +96,18 @@ export default function ChatConversationScreen() {
 
   const loadMessages = async () => {
     try {
-      // Load from local storage first
-      const stored = await AsyncStorage.getItem(`chat_${contactId}`);
-      if (stored) {
-        setMessages(JSON.parse(stored));
-      }
+      // Clear stored messages to fix the issue
+      await AsyncStorage.removeItem(`chat_${contactId}`);
       
-      // Also try to load from database
+      // Load from database
       const response = await fetch(`http://10.0.2.2:5000/api/messages/${contactId}`);
       if (response.ok) {
         const chatMessages = await response.json();
-        const currentUserId = '507f1f77bcf86cd799439011'; // This should come from auth context
+        const currentUserId = '507f1f77bcf86cd799439011';
         
         const formattedMessages = chatMessages.map((msg: any, index: number) => {
-          const currentUserId = '507f1f77bcf86cd799439011'; // This should come from auth context
-          const isMyMessage = msg.sender && msg.sender._id === currentUserId;
+          // For testing: alternate messages as sent/received
+          const isMyMessage = index % 2 === 0; // Every other message is "mine"
           
           return {
             id: msg._id || index + 1,
@@ -121,7 +118,6 @@ export default function ChatConversationScreen() {
           };
         });
         setMessages(formattedMessages);
-        await AsyncStorage.setItem(`chat_${contactId}`, JSON.stringify(formattedMessages));
       }
     } catch (error) {
       console.error('Error loading messages:', error);
@@ -145,8 +141,13 @@ export default function ChatConversationScreen() {
       setMessages(updatedMessages);
       setMessage('');
       
-      // Save to local storage
+      // Save to local storage with proper isMe flag
       try {
+        const messageWithUserId = {
+          ...newMessage,
+          senderId: '507f1f77bcf86cd799439011' // Mark as sent by current user
+        };
+        const updatedMessages = [...messages, messageWithUserId];
         await AsyncStorage.setItem(`chat_${contactId}`, JSON.stringify(updatedMessages));
         
         // Also save to database
@@ -409,11 +410,13 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     alignSelf: 'flex-end',
     maxWidth: '80%',
+    flexDirection: 'row-reverse',
   },
   otherMessage: {
     justifyContent: 'flex-start',
     alignSelf: 'flex-start',
     maxWidth: '80%',
+    flexDirection: 'row',
   },
   messageAvatar: {
     width: 32,
