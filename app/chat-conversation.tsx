@@ -40,6 +40,48 @@ export default function ChatConversationScreen() {
   useEffect(() => {
     if (contactId) {
       loadMessages();
+    } else {
+      // Add sample messages to demonstrate the styling
+      const sampleMessages: Message[] = [
+        {
+          id: 1,
+          text: "Oh, Hello Angela Young",
+          time: "06:25 AM",
+          isMe: true,
+          type: 'text'
+        },
+        {
+          id: 2,
+          text: "I feeling better than before Should I need a haircut?",
+          time: "06:25 AM",
+          isMe: true,
+          type: 'text'
+        },
+        {
+          id: 3,
+          text: "I will check-in this evening at 7:30 pm, Is it ok for you?",
+          time: "06:25 AM",
+          isMe: false,
+          type: 'text'
+        },
+        {
+          id: 4,
+          text: "Yeah sure, I will be there at 7 pm with my brother",
+          time: "06:25 AM",
+          isMe: true,
+          type: 'text'
+        },
+        {
+          id: 5,
+          text: "",
+          time: "06:25 AM",
+          isMe: false,
+          type: 'voice',
+          duration: '0:05'
+        }
+      ];
+      setMessages(sampleMessages);
+      setLoading(false);
     }
   }, [contactId]);
 
@@ -64,12 +106,14 @@ export default function ChatConversationScreen() {
       const response = await fetch(`http://10.0.2.2:5000/api/messages/${contactId}`);
       if (response.ok) {
         const chatMessages = await response.json();
+        const currentUserId = '507f1f77bcf86cd799439011'; // This should come from auth context
+        
         const formattedMessages = chatMessages.map((msg: any, index: number) => ({
           id: msg._id || index + 1,
           text: msg.content,
           time: new Date(msg.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
-          isMe: true, // Simplified for now
-          type: 'text'
+          isMe: msg.sender._id === currentUserId, // Properly check if message is from current user
+          type: msg.messageType || 'text'
         }));
         setMessages(formattedMessages);
         await AsyncStorage.setItem(`chat_${contactId}`, JSON.stringify(formattedMessages));
@@ -191,24 +235,24 @@ export default function ChatConversationScreen() {
       );
     }
 
-    return (
-      <View key={msg.id} style={[styles.messageContainer, msg.isMe ? styles.myMessage : styles.otherMessage]}>
-        {!msg.isMe && (
-          <Image 
-            source={require('../assets/images/specialist-profile1.jpg')} 
-            style={styles.messageAvatar} 
-          />
-        )}
-        <View style={[styles.messageBubble, msg.isMe ? styles.myBubble : styles.otherBubble]}>
-          <Text style={[styles.messageText, msg.isMe ? styles.myMessageText : styles.otherMessageText]}>
-            {msg.text}
-          </Text>
-          <Text style={[styles.messageTime, msg.isMe ? styles.myMessageTime : styles.otherMessageTime]}>
-            {msg.time}
-          </Text>
-        </View>
+  return (
+    <View key={msg.id} style={[styles.messageContainer, msg.isMe ? styles.myMessage : styles.otherMessage]}>
+      {!msg.isMe && (
+        <Image 
+          source={require('../assets/images/specialist-profile1.jpg')} 
+          style={styles.messageAvatar} 
+        />
+      )}
+      <View style={[styles.messageBubble, msg.isMe ? styles.myBubble : styles.otherBubble]}>
+        <Text style={[styles.messageText, msg.isMe ? styles.myMessageText : styles.otherMessageText]}>
+          {msg.text}
+        </Text>
+        <Text style={[styles.messageTime, msg.isMe ? styles.myMessageTime : styles.otherMessageTime]}>
+          {msg.time}
+        </Text>
       </View>
-    );
+    </View>
+  );
   };
 
   return (
@@ -354,12 +398,17 @@ const styles = StyleSheet.create({
   messageContainer: {
     flexDirection: 'row',
     marginVertical: 4,
+    paddingHorizontal: 4,
   },
   myMessage: {
     justifyContent: 'flex-end',
+    alignSelf: 'flex-end',
+    maxWidth: '80%',
   },
   otherMessage: {
     justifyContent: 'flex-start',
+    alignSelf: 'flex-start',
+    maxWidth: '80%',
   },
   messageAvatar: {
     width: 32,
