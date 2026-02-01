@@ -64,7 +64,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
       case 'salons':
         return user.role === 'admin' ? <SalonsManagement /> : null;
       case 'bookings':
-        return <BookingsManagement userRole={user.role} />;
+        return user.role !== 'customer' ? <BookingsManagement userRole={user.role as 'admin' | 'salon_owner'} /> : null;
       case 'profile':
         return user.role === 'salon_owner' ? <SalonProfile /> : null;
       case 'services':

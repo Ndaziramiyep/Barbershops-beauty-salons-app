@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { User, Salon, Booking, DashboardStats, AuthResponse } from './types';
+import { User, Salon, Booking, DashboardStats, AuthResponse, Service } from './types';
 
 const API_BASE = 'http://localhost:5000/api';
 
