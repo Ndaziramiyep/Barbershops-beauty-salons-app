@@ -94,7 +94,22 @@ export default function HomeScreen() {
     // Skip location modal and load salons directly
     setShowLocationModal(false);
     handleEnableLocation();
+    loadNextBooking();
   }, []);
+
+  const loadNextBooking = async () => {
+    try {
+      const bookings = await bookingService.getMyBookings();
+      const upcomingBookings = bookings.filter(b => 
+        b.status === 'confirmed' && new Date(b.date) >= new Date()
+      );
+      if (upcomingBookings.length > 0) {
+        setNextBooking(upcomingBookings[0]);
+      }
+    } catch (error) {
+      console.error('Error loading bookings:', error);
+    }
+  };
 
   const services = [
     { id: 1, name: 'Haircuts', image: require('../../../assets/images/haircut-style.jpg') },
