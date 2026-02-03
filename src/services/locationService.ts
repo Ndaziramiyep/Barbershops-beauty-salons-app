@@ -22,9 +22,11 @@ export const getCurrentLocation = async (): Promise<LocationData | null> => {
       return null;
     }
 
-    // Get current position
+    // Get current position with higher accuracy for emulator
     const location = await Location.getCurrentPositionAsync({
-      accuracy: Location.Accuracy.Balanced,
+      accuracy: Location.Accuracy.High,
+      timeout: 15000,
+      maximumAge: 10000,
     });
 
     // Reverse geocode to get address
@@ -36,7 +38,7 @@ export const getCurrentLocation = async (): Promise<LocationData | null> => {
     const address = reverseGeocode[0];
     const formattedAddress = address 
       ? `${address.street || ''} ${address.city || ''}, ${address.region || ''} ${address.postalCode || ''}`.trim()
-      : 'Location not found';
+      : `${location.coords.latitude.toFixed(4)}, ${location.coords.longitude.toFixed(4)}`;
 
     return {
       latitude: location.coords.latitude,
