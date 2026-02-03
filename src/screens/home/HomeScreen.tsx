@@ -1,3 +1,4 @@
+import * as Location from 'expo-location';
 import React, { useState, useEffect } from 'react';
 import {
   View,
@@ -21,7 +22,7 @@ import { bookingService, Booking } from '../../services/bookingService';
 export default function HomeScreen() {
   const router = useRouter();
   const { user } = useAuth();
-  const [showLocationModal, setShowLocationModal] = useState(true);
+  const [showLocationModal, setShowLocationModal] = useState(false);
   const [userLocation, setUserLocation] = useState('Fetching location...');
   const [locationData, setLocationData] = useState<LocationData | null>(null);
   const [nearestSalon, setNearestSalon] = useState<Salon | null>(null);
@@ -95,9 +96,35 @@ export default function HomeScreen() {
   };
 
   useEffect(() => {
-    // Show location modal first
+    checkLocationAndLoad();
     loadNextBooking();
   }, []);
+
+  const checkLocationAndLoad = async () => {
+    try {
+      // Check if location services are enabled
+      const enabled = await Location.hasServicesEnabledAsync();
+      if (!enabled) {
+        setShowLocationModal(true);
+        loadAllSalons();
+        return;
+      }
+
+      // Check permission status
+      const { status } = await Location.getForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        setShowLocationModal(true);
+        loadAllSalons();
+        return;
+      }
+
+      // Location is available, get it directly
+      handleEnableLocation();
+    } catch (error) {
+      console.error('Error checking location:', error);
+      loadAllSalons();
+    }
+  };
 
   const loadNextBooking = async () => {
     try {
@@ -122,6 +149,16 @@ export default function HomeScreen() {
     { id: 2, name: 'Make up', image: require('../../../assets/images/bridal-makeup-4.jpg') },
     { id: 3, name: 'Manicure', image: require('../../../assets/images/bridal-makeup-5.jpg') },
   ];
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'pending': return '#ffc107';
+      case 'confirmed': return '#28a745';
+      case 'completed': return '#6c757d';
+      case 'cancelled': return '#dc3545';
+      default: return '#6c757d';
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -158,12 +195,12 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        {/* Appointment */}
+        {/* Appointments */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Appointment</Text>
+            <Text style={styles.sectionTitle}>Appointments</Text>
             <TouchableOpacity onPress={() => router.push('/booking')}>
-              <Text style={styles.viewAll}>View All</Text>
+              <Text style={styles.viewAll}>View All ({allBookings.length})</Text>
             </TouchableOpacity>
           </View>
           
@@ -200,6 +237,33 @@ export default function HomeScreen() {
               </View>
             </TouchableOpacity>
           )}
+          
+          {/* Recent Appointments */}
+          {allBookings.length > 0 && (
+            <View style={styles.recentAppointments}>
+              <Text style={styles.recentTitle}>Recent Appointments</Text>
+              {allBookings.slice(0, 3).map((booking) => (
+                <TouchableOpacity 
+                  key={booking._id} 
+                  style={styles.recentAppointmentItem}
+                  onPress={() => router.push('/booking')}
+                >
+                  <View style={styles.recentAppointmentInfo}>
+                    <Text style={styles.recentSalonName}>{booking.salonId.name}</Text>
+                    <Text style={styles.recentServiceName}>{booking.serviceName}</Text>
+                  </View>
+                  <View style={styles.recentAppointmentMeta}>
+                    <Text style={styles.recentDate}>
+                      {new Date(booking.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                    </Text>
+                    <View style={[styles.statusBadge, { backgroundColor: getStatusColor(booking.status) }]}>
+                      <Text style={styles.statusText}>{booking.status}</Text>
+                    </View>
+                  </View>
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
         </View>
 
         {/* Services */}
@@ -225,12 +289,12 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        {/* Nearest Salon */}
+        {/* Nearby Salons */}
         <View style={[styles.section, styles.lastSection]}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Nearest salon</Text>
+            <Text style={styles.sectionTitle}>Nearby Salons</Text>
             <TouchableOpacity onPress={() => router.push('/location')}>
-              <Text style={styles.viewAll}>View All</Text>
+              <Text style={styles.viewAll}>View All ({nearbySalons.length})</Text>
             </TouchableOpacity>
           </View>
           
@@ -238,38 +302,39 @@ export default function HomeScreen() {
             <View style={styles.loadingContainer}>
               <ActivityIndicator size="large" color="#6366f1" />
             </View>
-          ) : nearestSalon ? (
-            <TouchableOpacity 
-              style={styles.salonCard}
-              onPress={() => router.push(`/salon-detail?salonId=${nearestSalon._id}`)}
-            >
-              <Image
-                source={require('../../../assets/images/salon-image1.png')}
-                style={styles.salonImage}
-              />
-              <View style={styles.salonInfo}>
-                <View style={styles.salonHeader}>
-                  <Text style={styles.salonName}>{nearestSalon.name}</Text>
-                  <View style={styles.rating}>
-                    {[1,2,3,4,5].map((star) => (
-                      <Ionicons 
-                        key={star} 
-                        name={star <= Math.floor(nearestSalon.rating || 0) ? "star" : "star-outline"} 
-                        size={14} 
-                        color="#FFD700" 
-                      />
-                    ))}
-                  </View>
-                </View>
-                <View style={styles.addressRow}>
-                  <Text style={styles.salonAddress}>{nearestSalon.address}</Text>
-                  <View style={styles.distanceContainer}>
-                    <Ionicons name="location" size={14} color="#666" />
-                    <Text style={styles.distance}>Available</Text>
-                  </View>
-                </View>
+          ) : nearbySalons.length > 0 ? (
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              <View style={styles.salonsContainer}>
+                {nearbySalons.map((salon) => (
+                  <TouchableOpacity 
+                    key={salon._id}
+                    style={styles.salonCardHorizontal}
+                    onPress={() => router.push(`/salon-detail?salonId=${salon._id}`)}
+                  >
+                    <Image
+                      source={require('../../../assets/images/salon-image1.png')}
+                      style={styles.salonImageHorizontal}
+                    />
+                    <View style={styles.salonInfoHorizontal}>
+                      <Text style={styles.salonNameHorizontal}>{salon.name}</Text>
+                      <View style={styles.rating}>
+                        {[1,2,3,4,5].map((star) => (
+                          <Ionicons 
+                            key={star} 
+                            name={star <= Math.floor(salon.rating || 0) ? "star" : "star-outline"} 
+                            size={12} 
+                            color="#FFD700" 
+                          />
+                        ))}
+                      </View>
+                      <Text style={styles.salonAddressHorizontal} numberOfLines={2}>
+                        {salon.address}
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
+                ))}
               </View>
-            </TouchableOpacity>
+            </ScrollView>
           ) : (
             <TouchableOpacity 
               style={styles.noSalonCard}
@@ -446,6 +511,91 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: '#999',
     fontSize: 12,
+    marginTop: 4,
+  },
+  recentAppointments: {
+    marginTop: 16,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#f0f0f0',
+  },
+  recentTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 12,
+  },
+  recentAppointmentItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f5f5f5',
+  },
+  recentAppointmentInfo: {
+    flex: 1,
+  },
+  recentSalonName: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#333',
+  },
+  recentServiceName: {
+    fontSize: 12,
+    color: '#666',
+  },
+  recentAppointmentMeta: {
+    alignItems: 'flex-end',
+  },
+  recentDate: {
+    fontSize: 12,
+    color: '#666',
+    marginBottom: 4,
+  },
+  statusBadge: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 8,
+  },
+  statusText: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: '#fff',
+    textTransform: 'uppercase',
+  },
+  salonsContainer: {
+    flexDirection: 'row',
+    gap: 12,
+    paddingRight: 20,
+  },
+  salonCardHorizontal: {
+    width: 160,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  salonImageHorizontal: {
+    width: '100%',
+    height: 100,
+  },
+  salonInfoHorizontal: {
+    padding: 8,
+  },
+  salonNameHorizontal: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 4,
+  },
+  salonAddressHorizontal: {
+    fontSize: 11,
+    color: '#666',
     marginTop: 4,
   },
   servicesContainer: {
