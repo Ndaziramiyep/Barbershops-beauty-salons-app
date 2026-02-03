@@ -12,7 +12,6 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import LocationPermissionModal from '../../components/LocationPermissionModal';
 import { getCurrentLocation, LocationData } from '../../services/locationService';
 import { useAuth } from '../../services/authContext';
 import { salonService, Salon } from '../../services/salonService';
@@ -21,7 +20,7 @@ import { bookingService, Booking } from '../../services/bookingService';
 export default function HomeScreen() {
   const router = useRouter();
   const { user } = useAuth();
-  const [showLocationModal, setShowLocationModal] = useState(true);
+  const [showLocationModal, setShowLocationModal] = useState(false);
   const [userLocation, setUserLocation] = useState('Fetching location...');
   const [locationData, setLocationData] = useState<LocationData | null>(null);
   const [nearestSalon, setNearestSalon] = useState<Salon | null>(null);
@@ -306,11 +305,6 @@ export default function HomeScreen() {
           <Ionicons name="person-outline" size={24} color="#999" />
         </TouchableOpacity>
       </View>
-      <LocationPermissionModal
-        visible={showLocationModal}
-        onEnable={handleEnableLocation}
-        onClose={() => setShowLocationModal(false)}
-      />
     </SafeAreaView>
   );
 }
