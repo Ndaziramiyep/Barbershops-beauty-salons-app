@@ -6,7 +6,7 @@ const API_BASE_URL = __DEV__
 
 const getAuthToken = async () => {
   try {
-    return await AsyncStorage.getItem('authToken');
+    return await AsyncStorage.getItem('token');
   } catch (error) {
     return null;
   }

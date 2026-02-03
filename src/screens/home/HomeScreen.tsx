@@ -16,6 +16,7 @@ import LocationPermissionModal from '../../components/LocationPermissionModal';
 import { getCurrentLocation, LocationData } from '../../services/locationService';
 import { useAuth } from '../../services/authContext';
 import { salonService, Salon } from '../../services/salonService';
+import { bookingService, Booking } from '../../services/bookingService';
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -24,6 +25,7 @@ export default function HomeScreen() {
   const [userLocation, setUserLocation] = useState('Fetching location...');
   const [locationData, setLocationData] = useState<LocationData | null>(null);
   const [nearestSalon, setNearestSalon] = useState<Salon | null>(null);
+  const [nextBooking, setNextBooking] = useState<Booking | null>(null);
   const [loading, setLoading] = useState(false);
 
   const handleEnableLocation = async () => {
@@ -35,19 +37,21 @@ export default function HomeScreen() {
       loadNearestSalon(location.latitude, location.longitude);
     } else {
       setUserLocation('Location unavailable');
+      // Load all salons if location is unavailable
+      loadAllSalons();
     }
   };
 
-  const loadNearestSalon = async (latitude: number, longitude: number) => {
+  const loadAllSalons = async () => {
     try {
       setLoading(true);
-      const salons = await salonService.getNearbySalons(latitude, longitude, 10);
+      const salons = await salonService.getAllSalons();
       if (salons.length > 0) {
         setNearestSalon(salons[0]);
       }
     } catch (error) {
-      console.error('Error loading nearest salon:', error);
-      // Fallback to static data
+      console.error('Error loading salons:', error);
+      // Keep fallback salon
       setNearestSalon({
         _id: '1',
         name: 'Bella Rinova',
@@ -58,14 +62,37 @@ export default function HomeScreen() {
         rating: 4.8,
         image: 'salon-image1.png',
         services: [],
-        workingHours: {}
+        workingHours: {},
+        isApproved: true,
+        isActive: true
       });
     } finally {
       setLoading(false);
     }
   };
 
+  const loadNearestSalon = async (latitude: number, longitude: number) => {
+    try {
+      setLoading(true);
+      const salons = await salonService.getNearbySalons(latitude, longitude, 10);
+      if (salons.length > 0) {
+        setNearestSalon(salons[0]);
+      } else {
+        // If no nearby salons, load all salons
+        loadAllSalons();
+      }
+    } catch (error) {
+      console.error('Error loading nearest salon:', error);
+      // Fallback to loading all salons
+      loadAllSalons();
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
+    // Skip location modal and load salons directly
+    setShowLocationModal(false);
     handleEnableLocation();
   }, []);
 
