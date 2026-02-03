@@ -9,8 +9,10 @@ router.get('/', async (req, res) => {
     const salons = await Salon.find({ isApproved: true, isActive: true })
       .populate('ownerId', 'name email phone')
       .sort({ createdAt: -1 });
+    console.log(`Found ${salons.length} approved salons`);
     res.json(salons);
   } catch (error) {
+    console.error('Error fetching salons:', error);
     res.status(500).json({ message: error.message });
   }
 });
@@ -46,12 +48,18 @@ router.get('/nearby', async (req, res) => {
 // Get salon by ID
 router.get('/:id', async (req, res) => {
   try {
-    const salon = await Salon.findById(req.params.id);
+    const salon = await Salon.findOne({ 
+      _id: req.params.id, 
+      isApproved: true, 
+      isActive: true 
+    }).populate('ownerId', 'name email phone');
+    
     if (!salon) {
       return res.status(404).json({ message: 'Salon not found' });
     }
     res.json(salon);
   } catch (error) {
+    console.error('Error fetching salon by ID:', error);
     res.status(500).json({ message: error.message });
   }
 });
