@@ -1,6 +1,3 @@
-import React from 'react';
-import BookingScreen from '../src/screens/booking/BookingScreen';
+import BookingsScreen from '../src/screens/booking/BookingsScreen';
 
-export default function Booking() {
-  return <BookingScreen />;
-}
+export default BookingsScreen;
