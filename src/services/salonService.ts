@@ -12,14 +12,32 @@ export interface Salon {
   email: string;
   rating: number;
   image: string;
-  services: Array<{
+  services: Service[];
+  workingHours: WorkingHours;
+  ownerId?: {
     name: string;
-    price: number;
-    duration: number;
-  }>;
-  workingHours: {
-    [key: string]: { open: string; close: string };
+    email: string;
+    phone: string;
   };
+  isApproved: boolean;
+  isActive: boolean;
+}
+
+export interface Service {
+  _id: string;
+  name: string;
+  price: number;
+  duration: number;
+}
+
+export interface WorkingHours {
+  monday?: { open: string; close: string };
+  tuesday?: { open: string; close: string };
+  wednesday?: { open: string; close: string };
+  thursday?: { open: string; close: string };
+  friday?: { open: string; close: string };
+  saturday?: { open: string; close: string };
+  sunday?: { open: string; close: string };
 }
 
 export const salonService = {
@@ -27,11 +45,11 @@ export const salonService = {
     return apiClient.get('/salons');
   },
 
-  getNearbySalons: async (latitude: number, longitude: number, radius = 10): Promise<Salon[]> => {
-    return apiClient.get(`/salons/nearby?latitude=${latitude}&longitude=${longitude}&radius=${radius}`);
-  },
-
   getSalonById: async (id: string): Promise<Salon> => {
     return apiClient.get(`/salons/${id}`);
+  },
+
+  getNearbySalons: async (latitude: number, longitude: number, radius: number = 10): Promise<Salon[]> => {
+    return apiClient.get(`/salons/nearby?latitude=${latitude}&longitude=${longitude}&radius=${radius}`);
   },
 };

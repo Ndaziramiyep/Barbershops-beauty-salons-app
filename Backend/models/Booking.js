@@ -1,20 +1,27 @@
 const mongoose = require('mongoose');
 
 const bookingSchema = new mongoose.Schema({
-  user: {
+  userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true
   },
-  salon: {
+  salonId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Salon',
     required: true
   },
-  service: {
-    name: String,
-    price: Number,
-    duration: Number
+  serviceName: {
+    type: String,
+    required: true
+  },
+  servicePrice: {
+    type: Number,
+    required: true
+  },
+  serviceDuration: {
+    type: Number,
+    required: true
   },
   date: {
     type: Date,
@@ -22,6 +29,10 @@ const bookingSchema = new mongoose.Schema({
   },
   time: {
     type: String,
+    required: true
+  },
+  totalPrice: {
+    type: Number,
     required: true
   },
   status: {

@@ -6,7 +6,9 @@ const router = express.Router();
 // Get all salons
 router.get('/', async (req, res) => {
   try {
-    const salons = await Salon.find();
+    const salons = await Salon.find({ isApproved: true, isActive: true })
+      .populate('ownerId', 'name email phone')
+      .sort({ createdAt: -1 });
     res.json(salons);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -23,6 +25,8 @@ router.get('/nearby', async (req, res) => {
     }
 
     const salons = await Salon.find({
+      isApproved: true,
+      isActive: true,
       'location.latitude': {
         $gte: parseFloat(latitude) - radius / 111,
         $lte: parseFloat(latitude) + radius / 111
@@ -31,7 +35,7 @@ router.get('/nearby', async (req, res) => {
         $gte: parseFloat(longitude) - radius / 111,
         $lte: parseFloat(longitude) + radius / 111
       }
-    });
+    }).populate('ownerId', 'name email phone');
 
     res.json(salons);
   } catch (error) {
