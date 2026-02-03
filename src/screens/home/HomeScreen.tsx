@@ -156,34 +156,62 @@ export default function HomeScreen() {
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Appointment</Text>
-            <TouchableOpacity>
-              <Text style={styles.viewAll}>Today, Morning</Text>
+            <TouchableOpacity onPress={() => router.push('/booking')}>
+              <Text style={styles.viewAll}>View All</Text>
             </TouchableOpacity>
           </View>
           
-          <TouchableOpacity style={styles.appointmentCard}>
-            <View style={styles.appointmentIcon}>
-              <Ionicons name="calendar" size={20} color="#fff" />
-            </View>
-            <View style={styles.appointmentInfo}>
-              <Text style={styles.appointmentTitle}>At The Galleria Hair Salon</Text>
-            </View>
-            <Text style={styles.appointmentTime}>9:00 AM</Text>
-          </TouchableOpacity>
+          {nextBooking ? (
+            <TouchableOpacity 
+              style={styles.appointmentCard}
+              onPress={() => router.push('/booking')}
+            >
+              <View style={styles.appointmentIcon}>
+                <Ionicons name="calendar" size={20} color="#fff" />
+              </View>
+              <View style={styles.appointmentInfo}>
+                <Text style={styles.appointmentTitle}>{nextBooking.salonId.name}</Text>
+                <Text style={styles.appointmentService}>{nextBooking.serviceName}</Text>
+              </View>
+              <View style={styles.appointmentTime}>
+                <Text style={styles.appointmentTimeText}>{nextBooking.time}</Text>
+                <Text style={styles.appointmentDate}>
+                  {new Date(nextBooking.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                </Text>
+              </View>
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity 
+              style={[styles.appointmentCard, styles.noAppointmentCard]}
+              onPress={() => router.push('/location')}
+            >
+              <View style={styles.appointmentIcon}>
+                <Ionicons name="calendar-outline" size={20} color="#666" />
+              </View>
+              <View style={styles.appointmentInfo}>
+                <Text style={styles.noAppointmentTitle}>No upcoming appointments</Text>
+                <Text style={styles.noAppointmentSubtitle}>Book your next appointment</Text>
+              </View>
+            </TouchableOpacity>
+          )}
         </View>
 
         {/* Services */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Services</Text>
-            <TouchableOpacity>
+            <TouchableOpacity onPress={() => router.push('/location')}>
               <Text style={styles.viewAll}>View All</Text>
             </TouchableOpacity>
           </View>
           
           <View style={styles.servicesContainer}>
             {services.map((service) => (
-              <TouchableOpacity key={service.id} style={styles.serviceCard}>
+              <TouchableOpacity 
+                key={service.id} 
+                style={styles.serviceCard}
+                onPress={() => router.push('/location')}
+              >
                 <Image source={service.image} style={styles.serviceImage} />
                 <Text style={styles.serviceName}>{service.name}</Text>
               </TouchableOpacity>
@@ -195,7 +223,7 @@ export default function HomeScreen() {
         <View style={[styles.section, styles.lastSection]}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Nearest salon</Text>
-            <TouchableOpacity>
+            <TouchableOpacity onPress={() => router.push('/location')}>
               <Text style={styles.viewAll}>View All</Text>
             </TouchableOpacity>
           </View>
@@ -220,7 +248,7 @@ export default function HomeScreen() {
                     {[1,2,3,4,5].map((star) => (
                       <Ionicons 
                         key={star} 
-                        name={star <= Math.floor(nearestSalon.rating) ? "star" : "star-outline"} 
+                        name={star <= Math.floor(nearestSalon.rating || 0) ? "star" : "star-outline"} 
                         size={14} 
                         color="#FFD700" 
                       />
@@ -231,13 +259,19 @@ export default function HomeScreen() {
                   <Text style={styles.salonAddress}>{nearestSalon.address}</Text>
                   <View style={styles.distanceContainer}>
                     <Ionicons name="location" size={14} color="#666" />
-                    <Text style={styles.distance}>5 km</Text>
+                    <Text style={styles.distance}>Available</Text>
                   </View>
                 </View>
               </View>
             </TouchableOpacity>
           ) : (
-            <Text style={styles.noDataText}>No salons found nearby</Text>
+            <TouchableOpacity 
+              style={styles.noSalonCard}
+              onPress={() => router.push('/location')}
+            >
+              <Text style={styles.noDataText}>No salons found nearby</Text>
+              <Text style={styles.noDataSubtext}>Tap to browse all salons</Text>
+            </TouchableOpacity>
           )}
         </View>
       </ScrollView>
@@ -367,9 +401,46 @@ const styles = StyleSheet.create({
     color: '#fff',
   },
   appointmentTime: {
+    alignItems: 'flex-end',
+  },
+  appointmentTimeText: {
     fontSize: 14,
     color: '#fff',
     fontWeight: '600',
+  },
+  appointmentDate: {
+    fontSize: 12,
+    color: '#fff',
+    opacity: 0.8,
+  },
+  appointmentService: {
+    fontSize: 12,
+    color: '#fff',
+    opacity: 0.8,
+  },
+  noAppointmentCard: {
+    backgroundColor: '#f8f9fa',
+  },
+  noAppointmentTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#666',
+  },
+  noAppointmentSubtitle: {
+    fontSize: 12,
+    color: '#999',
+  },
+  noSalonCard: {
+    backgroundColor: '#f8f9fa',
+    padding: 20,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  noDataSubtext: {
+    textAlign: 'center',
+    color: '#999',
+    fontSize: 12,
+    marginTop: 4,
   },
   servicesContainer: {
     flexDirection: 'row',
