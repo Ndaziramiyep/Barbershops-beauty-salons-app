@@ -25,6 +25,8 @@ export default function HomeScreen() {
   const [userLocation, setUserLocation] = useState('Fetching location...');
   const [locationData, setLocationData] = useState<LocationData | null>(null);
   const [nearestSalon, setNearestSalon] = useState<Salon | null>(null);
+  const [nearbySalons, setNearbySalons] = useState<Salon[]>([]);
+  const [allBookings, setAllBookings] = useState<Booking[]>([]);
   const [nextBooking, setNextBooking] = useState<Booking | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -48,6 +50,7 @@ export default function HomeScreen() {
       const salons = await salonService.getAllSalons();
       if (salons.length > 0) {
         setNearestSalon(salons[0]);
+        setNearbySalons(salons.slice(0, 5)); // Show first 5 salons
       }
     } catch (error) {
       console.error('Error loading salons:', error);
@@ -77,6 +80,7 @@ export default function HomeScreen() {
       const salons = await salonService.getNearbySalons(latitude, longitude, 10);
       if (salons.length > 0) {
         setNearestSalon(salons[0]);
+        setNearbySalons(salons.slice(0, 5)); // Show top 5 nearby salons
       } else {
         // If no nearby salons, load all salons
         loadAllSalons();
@@ -98,9 +102,13 @@ export default function HomeScreen() {
   const loadNextBooking = async () => {
     try {
       const bookings = await bookingService.getMyBookings();
+      setAllBookings(bookings);
+      
       const upcomingBookings = bookings.filter(b => 
-        b.status === 'confirmed' && new Date(b.date) >= new Date()
-      );
+        (b.status === 'confirmed' || b.status === 'pending') && 
+        new Date(b.date) >= new Date()
+      ).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+      
       if (upcomingBookings.length > 0) {
         setNextBooking(upcomingBookings[0]);
       }
