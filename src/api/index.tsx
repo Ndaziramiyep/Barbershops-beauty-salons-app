@@ -1,4 +1,6 @@
-const API_BASE_URL = __DEV__ ? 'http://10.0.2.2:5000/api' : 'https://your-production-api.com/api';
+const API_BASE_URL = __DEV__
+  ? "http://10.0.2.2:5000/api"
+  : "https://your-production-api.com/api";
 
 export const apiClient = {
   API_BASE_URL,
@@ -10,17 +12,17 @@ export const apiClient = {
       }
       return response.json();
     } catch (error) {
-      console.error('API GET Error:', error);
+      console.error("API GET Error:", error);
       throw error;
     }
   },
-  
+
   post: async (endpoint: string, data: any) => {
     try {
       const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(data),
       });
@@ -29,7 +31,7 @@ export const apiClient = {
       }
       return response.json();
     } catch (error) {
-      console.error('API POST Error:', error);
+      console.error("API POST Error:", error);
       throw error;
     }
   },

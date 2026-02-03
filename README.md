@@ -7,9 +7,9 @@ React Navigation works well for multiple screens and nested flows.
 
 📱 Screens Organized by Feature
 
-Divide screens into feature folders (auth, home, booking, profile, etc.).
+<!-- Divide screens into feature folders (auth, home, booking, profile, etc.).
 
-Makes scaling easier (files related to one feature live together).
+Makes scaling easier (files related to one feature live together). -->
 
 🧰 Components
 
