@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -10,7 +10,9 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useCallback } from 'react';
 
 interface PaymentMethod {
   id: string;
@@ -23,6 +25,35 @@ interface PaymentMethod {
 export default function PaymentMethodsScreen() {
   const router = useRouter();
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadPaymentMethods();
+    }, [])
+  );
+
+  const loadPaymentMethods = async () => {
+    try {
+      const stored = await AsyncStorage.getItem('paymentMethods');
+      console.log('Loaded payment methods:', stored);
+      if (stored) {
+        const methods = JSON.parse(stored);
+        console.log('Parsed methods:', methods);
+        setPaymentMethods(methods);
+      }
+    } catch (error) {
+      console.error('Error loading payment methods:', error);
+    }
+  };
+
+  const savePaymentMethods = async (methods: PaymentMethod[]) => {
+    try {
+      await AsyncStorage.setItem('paymentMethods', JSON.stringify(methods));
+      setPaymentMethods(methods);
+    } catch (error) {
+      console.error('Error saving payment methods:', error);
+    }
+  };
 
   const getPaymentIcon = (type: string) => {
     switch (type) {
@@ -54,13 +85,12 @@ export default function PaymentMethodsScreen() {
     }
   };
 
-  const handleSetDefault = (id: string) => {
-    setPaymentMethods(methods =>
-      methods.map(method => ({
-        ...method,
-        isDefault: method.id === id,
-      }))
-    );
+  const handleSetDefault = async (id: string) => {
+    const updatedMethods = paymentMethods.map(method => ({
+      ...method,
+      isDefault: method.id === id,
+    }));
+    await savePaymentMethods(updatedMethods);
   };
 
   const handleDeleteMethod = (id: string) => {
@@ -72,8 +102,9 @@ export default function PaymentMethodsScreen() {
         {
           text: 'Delete',
           style: 'destructive',
-          onPress: () => {
-            setPaymentMethods(methods => methods.filter(method => method.id !== id));
+          onPress: async () => {
+            const updatedMethods = paymentMethods.filter(method => method.id !== id);
+            await savePaymentMethods(updatedMethods);
           },
         },
       ]

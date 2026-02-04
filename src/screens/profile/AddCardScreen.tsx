@@ -12,6 +12,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function AddCardScreen() {
   const router = useRouter();
@@ -45,15 +46,48 @@ export default function AddCardScreen() {
     setExpDate(formatted);
   };
 
-  const handleAddCard = () => {
+  const handleAddCard = async () => {
     if (!cardNumber || !cardHolder || !expDate || !cvv) {
       Alert.alert('Error', 'Please fill in all fields');
       return;
     }
 
-    Alert.alert('Success', 'Card added successfully!', [
-      { text: 'OK', onPress: () => router.back() }
-    ]);
+    try {
+      // Load existing payment methods
+      const stored = await AsyncStorage.getItem('paymentMethods');
+      const existingMethods = stored ? JSON.parse(stored) : [];
+      console.log('Existing methods:', existingMethods);
+      
+      // Create new card
+      const newCard = {
+        id: Date.now().toString(),
+        type: 'card' as const,
+        name: getCardType(),
+        details: `**** **** **** ${cardNumber.slice(-4)}`,
+        isDefault: setAsDefault || existingMethods.length === 0, // First card is default
+      };
+      console.log('New card:', newCard);
+      
+      // If setting as default, update existing methods
+      const updatedMethods = setAsDefault 
+        ? existingMethods.map((method: any) => ({ ...method, isDefault: false }))
+        : existingMethods;
+      
+      // Add new card
+      updatedMethods.push(newCard);
+      console.log('Updated methods:', updatedMethods);
+      
+      // Save to storage
+      await AsyncStorage.setItem('paymentMethods', JSON.stringify(updatedMethods));
+      console.log('Saved to AsyncStorage');
+      
+      Alert.alert('Success', 'Card added successfully!', [
+        { text: 'OK', onPress: () => router.back() }
+      ]);
+    } catch (error) {
+      console.error('Error adding card:', error);
+      Alert.alert('Error', 'Failed to add card');
+    }
   };
 
   const getCardType = () => {
