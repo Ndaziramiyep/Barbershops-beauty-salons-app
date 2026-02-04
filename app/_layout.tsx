@@ -3,7 +3,7 @@ import LoadingScreen from "../src/components/LoadingScreen";
 import { AuthProvider, useAuth } from "../src/services/authContext";
 
 function RootLayoutNav() {
-  const { isLoading } = useAuth();
+  const { isLoading, user } = useAuth();
 
   if (isLoading) {
     return <LoadingScreen />;
@@ -14,6 +14,7 @@ function RootLayoutNav() {
       screenOptions={{
         headerShown: false,
       }}
+      initialRouteName={user ? "home" : "index"}
     >
       <Stack.Screen name="index" />
       <Stack.Screen name="signup" />

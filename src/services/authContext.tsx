@@ -25,16 +25,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const storedToken = await AsyncStorage.getItem('token');
       const storedUser = await AsyncStorage.getItem('user');
+      const loginTimestamp = await AsyncStorage.getItem('loginTimestamp');
       
-      if (storedToken && storedUser) {
-        setToken(storedToken);
-        setUser(JSON.parse(storedUser));
+      if (storedToken && storedUser && loginTimestamp) {
+        const currentTime = Date.now();
+        const loginTime = parseInt(loginTimestamp);
+        const twoDaysInMs = 2 * 24 * 60 * 60 * 1000; // 2 days in milliseconds
+        
+        // Check if login is still valid (within 2 days)
+        if (currentTime - loginTime < twoDaysInMs) {
+          setToken(storedToken);
+          setUser(JSON.parse(storedUser));
+        } else {
+          // Login expired, clear stored data
+          await AsyncStorage.removeItem('token');
+          await AsyncStorage.removeItem('user');
+          await AsyncStorage.removeItem('loginTimestamp');
+        }
       }
     } catch (error) {
       console.error('Error loading stored auth:', error);
       // Clear corrupted data
       await AsyncStorage.removeItem('token');
       await AsyncStorage.removeItem('user');
+      await AsyncStorage.removeItem('loginTimestamp');
     } finally {
       setIsLoading(false);
     }
@@ -42,8 +56,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = async (newToken: string, newUser: User) => {
     try {
+      const loginTimestamp = Date.now().toString();
       await AsyncStorage.setItem('token', newToken);
       await AsyncStorage.setItem('user', JSON.stringify(newUser));
+      await AsyncStorage.setItem('loginTimestamp', loginTimestamp);
       setToken(newToken);
       setUser(newUser);
     } catch (error) {
@@ -55,6 +71,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       await AsyncStorage.removeItem('token');
       await AsyncStorage.removeItem('user');
+      await AsyncStorage.removeItem('loginTimestamp');
       setToken(null);
       setUser(null);
     } catch (error) {
