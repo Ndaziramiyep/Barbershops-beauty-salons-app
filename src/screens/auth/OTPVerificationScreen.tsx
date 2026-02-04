@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -19,11 +19,26 @@ import { useAuth } from '../../services/authContext';
 export default function OTPVerificationScreen() {
   const [otp, setOtp] = useState(['', '', '', '']);
   const [loading, setLoading] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
+  const [countdown, setCountdown] = useState(60);
+  const [canResend, setCanResend] = useState(false);
+  const [timerActive, setTimerActive] = useState(true);
   const router = useRouter();
   const { email, isLogin } = useLocalSearchParams();
   const { login } = useAuth();
   
   const inputRefs = useRef<TextInput[]>([]);
+
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (timerActive && countdown > 0) {
+      timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+    } else if (countdown === 0) {
+      setCanResend(true);
+      setTimerActive(false);
+    }
+    return () => clearTimeout(timer);
+  }, [countdown, timerActive]);
 
   const handleOtpChange = (value: string, index: number) => {
     const newOtp = [...otp];
@@ -32,6 +47,24 @@ export default function OTPVerificationScreen() {
 
     if (value && index < 3) {
       inputRefs.current[index + 1]?.focus();
+    }
+  };
+
+  const handleResend = async () => {
+    if (!canResend || resendLoading) return;
+    
+    setResendLoading(true);
+    try {
+      await apiService.resendOTP({ email: email as string });
+      Alert.alert('Success', 'OTP has been resent to your email');
+      setCountdown(60);
+      setCanResend(false);
+      setTimerActive(true);
+      setOtp(['', '', '', '']); // Clear current OTP
+    } catch (error: any) {
+      Alert.alert('Error', error.message || 'Failed to resend OTP');
+    } finally {
+      setResendLoading(false);
     }
   };
 
@@ -108,8 +141,13 @@ export default function OTPVerificationScreen() {
 
       <View style={styles.resendContainer}>
         <Text style={styles.resendText}>Didn't receive the code? </Text>
-        <TouchableOpacity>
-          <Text style={styles.resendLink}>Resend</Text>
+        <TouchableOpacity 
+          onPress={handleResend}
+          disabled={!canResend || resendLoading}
+        >
+          <Text style={[styles.resendLink, (!canResend || resendLoading) && styles.resendDisabled]}>
+            {resendLoading ? 'Sending...' : canResend ? 'Resend' : `Resend in ${countdown}s`}
+          </Text>
         </TouchableOpacity>
       </View>
       </KeyboardAvoidingView>
@@ -191,5 +229,8 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#6366f1',
     fontWeight: '600',
+  },
+  resendDisabled: {
+    color: '#9ca3af',
   },
 });

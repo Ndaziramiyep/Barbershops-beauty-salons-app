@@ -18,13 +18,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    console.log('AuthProvider: Loading stored auth...');
-    // Add a small delay to ensure AsyncStorage is ready
-    const timer = setTimeout(() => {
-      loadStoredAuth();
-    }, 100);
-    
-    return () => clearTimeout(timer);
+    loadStoredAuth();
   }, []);
 
   const loadStoredAuth = async () => {
