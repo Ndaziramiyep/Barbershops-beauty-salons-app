@@ -9,6 +9,7 @@ import {
   Alert,
   KeyboardAvoidingView,
   Platform,
+  Modal,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -23,6 +24,7 @@ export default function OTPVerificationScreen() {
   const [countdown, setCountdown] = useState(60);
   const [canResend, setCanResend] = useState(false);
   const [timerActive, setTimerActive] = useState(true);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
   const router = useRouter();
   const { email, isLogin } = useLocalSearchParams();
   const { login } = useAuth();
@@ -42,11 +44,41 @@ export default function OTPVerificationScreen() {
 
   const handleOtpChange = (value: string, index: number) => {
     const newOtp = [...otp];
-    newOtp[index] = value;
-    setOtp(newOtp);
+    
+    if (value === '') {
+      // Handle backspace - move to previous input
+      newOtp[index] = '';
+      setOtp(newOtp);
+      if (index > 0) {
+        inputRefs.current[index - 1]?.focus();
+      }
+    } else {
+      // Handle input - move to next input
+      newOtp[index] = value;
+      setOtp(newOtp);
+      if (value && index < 3) {
+        inputRefs.current[index + 1]?.focus();
+      }
+      
+      // Auto-verify when all 4 digits are entered
+      if (index === 3 && value) {
+        const otpCode = newOtp.join('');
+        if (otpCode.length === 4) {
+          setTimeout(() => handleVerify(otpCode), 100);
+        }
+      }
+    }
+  };
 
-    if (value && index < 3) {
-      inputRefs.current[index + 1]?.focus();
+  const handleKeyPress = (e: any, index: number) => {
+    if (e.nativeEvent.key === 'Backspace' && otp[index] === '') {
+      // If current field is empty and backspace is pressed, go to previous field
+      if (index > 0) {
+        const newOtp = [...otp];
+        newOtp[index - 1] = '';
+        setOtp(newOtp);
+        inputRefs.current[index - 1]?.focus();
+      }
     }
   };
 
@@ -68,26 +100,27 @@ export default function OTPVerificationScreen() {
     }
   };
 
-  const handleVerify = async () => {
-    const otpCode = otp.join('');
-    if (otpCode.length !== 4) {
+  const handleVerify = async (otpCode?: string) => {
+    const code = otpCode || otp.join('');
+    if (code.length !== 4) {
       Alert.alert('Error', 'Please enter the complete OTP');
       return;
     }
 
     setLoading(true);
     try {
-      const response = await apiService.verifyOTP({ email: email as string, otp: otpCode });
+      const response = await apiService.verifyOTP({ email: email as string, otp: code });
       
-      if (!isLogin) {
-        // For signup flow, complete login and go to dashboard
+      // Show success modal
+      setShowSuccessModal(true);
+      
+      // Auto-close modal and navigate after 2 seconds
+      setTimeout(async () => {
+        setShowSuccessModal(false);
         await login(response.token, response.user);
         router.replace('/home');
-      } else {
-        // For login flow, complete the login process
-        await login(response.token, response.user);
-        router.replace('/home');
-      }
+      }, 2000);
+      
     } catch (error: any) {
       Alert.alert('Verification Failed', error.message);
     } finally {
@@ -122,6 +155,7 @@ export default function OTPVerificationScreen() {
             style={[styles.otpInput, digit && styles.otpInputFilled]}
             value={digit}
             onChangeText={(value) => handleOtpChange(value, index)}
+            onKeyPress={(e) => handleKeyPress(e, index)}
             keyboardType="numeric"
             maxLength={1}
             textAlign="center"
@@ -130,12 +164,12 @@ export default function OTPVerificationScreen() {
       </View>
 
       <TouchableOpacity 
-        style={[styles.verifyButton, loading && styles.verifyButtonDisabled]} 
-        onPress={handleVerify}
-        disabled={loading}
+        style={[styles.verifyButton, (loading || otp.join('').length === 4) && styles.verifyButtonDisabled]} 
+        onPress={() => handleVerify()}
+        disabled={loading || otp.join('').length === 4}
       >
         <Text style={styles.verifyButtonText}>
-          {loading ? 'Verifying...' : 'Verify'}
+          {loading ? 'Verifying...' : otp.join('').length === 4 ? 'Auto-verifying...' : 'Verify'}
         </Text>
       </TouchableOpacity>
 
@@ -151,6 +185,23 @@ export default function OTPVerificationScreen() {
         </TouchableOpacity>
       </View>
       </KeyboardAvoidingView>
+      
+      {/* Success Modal */}
+      <Modal
+        visible={showSuccessModal}
+        transparent={true}
+        animationType="fade"
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.successIcon}>
+              <Ionicons name="checkmark-circle" size={60} color="#28a745" />
+            </View>
+            <Text style={styles.successTitle}>OTP Verified!</Text>
+            <Text style={styles.successMessage}>Welcome to the app</Text>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -232,5 +283,36 @@ const styles = StyleSheet.create({
   },
   resendDisabled: {
     color: '#9ca3af',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    padding: 40,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  successIcon: {
+    marginBottom: 20,
+  },
+  successTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 8,
+  },
+  successMessage: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
   },
 });
