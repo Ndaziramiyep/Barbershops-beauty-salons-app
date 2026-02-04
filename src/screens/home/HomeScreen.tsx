@@ -27,6 +27,7 @@ export default function HomeScreen() {
   const [locationData, setLocationData] = useState<LocationData | null>(null);
   const [nearestSalon, setNearestSalon] = useState<Salon | null>(null);
   const [nearbySalons, setNearbySalons] = useState<Salon[]>([]);
+  const [showAllSalons, setShowAllSalons] = useState(false);
   const [allBookings, setAllBookings] = useState<Booking[]>([]);
   const [nextBooking, setNextBooking] = useState<Booking | null>(null);
   const [loading, setLoading] = useState(false);
@@ -293,8 +294,10 @@ export default function HomeScreen() {
         <View style={[styles.section, styles.lastSection]}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Nearby Salons</Text>
-            <TouchableOpacity onPress={() => router.push('/location')}>
-              <Text style={styles.viewAll}>View All ({nearbySalons.length})</Text>
+            <TouchableOpacity onPress={() => setShowAllSalons(!showAllSalons)}>
+              <Text style={styles.viewAll}>
+                {showAllSalons ? 'Show Less' : `View All (${nearbySalons.length})`}
+              </Text>
             </TouchableOpacity>
           </View>
           
@@ -303,38 +306,76 @@ export default function HomeScreen() {
               <ActivityIndicator size="large" color="#6366f1" />
             </View>
           ) : nearbySalons.length > 0 ? (
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              <View style={styles.salonsContainer}>
-                {nearbySalons.map((salon) => (
-                  <TouchableOpacity 
-                    key={salon._id}
-                    style={styles.salonCardHorizontal}
-                    onPress={() => router.push(`/salon-detail?salonId=${salon._id}`)}
-                  >
-                    <Image
-                      source={require('../../../assets/images/salon-image1.png')}
-                      style={styles.salonImageHorizontal}
-                    />
-                    <View style={styles.salonInfoHorizontal}>
-                      <Text style={styles.salonNameHorizontal}>{salon.name}</Text>
+            <View>
+              {/* First Salon - Always Visible */}
+              <TouchableOpacity 
+                style={styles.salonCard}
+                onPress={() => router.push(`/salon-detail?salonId=${nearbySalons[0]._id}`)}
+              >
+                <Image
+                  source={require('../../../assets/images/salon-image1.png')}
+                  style={styles.salonImage}
+                />
+                <View style={styles.salonInfo}>
+                  <View style={styles.salonHeader}>
+                    <Text style={styles.salonName}>{nearbySalons[0].name}</Text>
+                    <View style={styles.rating}>
+                      {[1,2,3,4,5].map((star) => (
+                        <Ionicons 
+                          key={star} 
+                          name={star <= Math.floor(nearbySalons[0].rating || 0) ? "star" : "star-outline"} 
+                          size={14} 
+                          color="#FFD700" 
+                        />
+                      ))}
+                    </View>
+                  </View>
+                  <View style={styles.addressRow}>
+                    <Text style={styles.salonAddress}>{nearbySalons[0].address}</Text>
+                    <View style={styles.distanceContainer}>
+                      <Ionicons name="location" size={14} color="#666" />
+                      <Text style={styles.distance}>Available</Text>
+                    </View>
+                  </View>
+                </View>
+              </TouchableOpacity>
+              
+              {/* Additional Salons - Show in Column when expanded */}
+              {showAllSalons && nearbySalons.slice(1).map((salon) => (
+                <TouchableOpacity 
+                  key={salon._id}
+                  style={[styles.salonCard, styles.additionalSalonCard]}
+                  onPress={() => router.push(`/salon-detail?salonId=${salon._id}`)}
+                >
+                  <Image
+                    source={require('../../../assets/images/salon-image1.png')}
+                    style={styles.salonImage}
+                  />
+                  <View style={styles.salonInfo}>
+                    <View style={styles.salonHeader}>
+                      <Text style={styles.salonName}>{salon.name}</Text>
                       <View style={styles.rating}>
                         {[1,2,3,4,5].map((star) => (
                           <Ionicons 
                             key={star} 
                             name={star <= Math.floor(salon.rating || 0) ? "star" : "star-outline"} 
-                            size={12} 
+                            size={14} 
                             color="#FFD700" 
                           />
                         ))}
                       </View>
-                      <Text style={styles.salonAddressHorizontal} numberOfLines={2}>
-                        {salon.address}
-                      </Text>
                     </View>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            </ScrollView>
+                    <View style={styles.addressRow}>
+                      <Text style={styles.salonAddress}>{salon.address}</Text>
+                      <View style={styles.distanceContainer}>
+                        <Ionicons name="location" size={14} color="#666" />
+                        <Text style={styles.distance}>Available</Text>
+                      </View>
+                    </View>
+                  </View>
+                </TouchableOpacity>
+              ))}
+            </View>
           ) : (
             <TouchableOpacity 
               style={styles.noSalonCard}
@@ -597,6 +638,9 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: '#666',
     marginTop: 4,
+  },
+  additionalSalonCard: {
+    marginTop: 12,
   },
   servicesContainer: {
     flexDirection: 'row',

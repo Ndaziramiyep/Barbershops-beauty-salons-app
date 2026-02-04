@@ -16,7 +16,6 @@ import {
   getCurrentLocation,
   LocationData,
 } from "../../services/locationService";
-import { salonService, Salon } from "../../services/salonService";
 
 export default function LocationScreen() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -24,7 +23,6 @@ export default function LocationScreen() {
     "Fetching location...",
   );
   const [locationData, setLocationData] = useState<LocationData | null>(null);
-  const [nearbySalons, setNearbySalons] = useState<Salon[]>([]);
 
   const fetchLocation = async () => {
     const location = await getCurrentLocation();
