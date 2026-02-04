@@ -28,6 +28,7 @@ function RootLayoutNav() {
       <Stack.Screen name="chat" />
       <Stack.Screen name="profile" />
       <Stack.Screen name="payment-methods" />
+      <Stack.Screen name="add-card" />
       <Stack.Screen name="faqs" />
       <Stack.Screen name="chat-conversation" />
       <Stack.Screen name="voice-call" />

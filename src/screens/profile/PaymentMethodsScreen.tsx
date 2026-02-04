@@ -22,29 +22,7 @@ interface PaymentMethod {
 
 export default function PaymentMethodsScreen() {
   const router = useRouter();
-  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([
-    {
-      id: '1',
-      type: 'paypal',
-      name: 'Jenny Wilson',
-      details: 'jenny.wilson@email.com',
-      isDefault: false,
-    },
-    {
-      id: '2',
-      type: 'card',
-      name: 'Mastercard',
-      details: '**** **** **** 9295',
-      isDefault: true,
-    },
-    {
-      id: '3',
-      type: 'card',
-      name: 'Visa',
-      details: '**** **** **** 6445',
-      isDefault: false,
-    },
-  ]);
+  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
 
   const getPaymentIcon = (type: string) => {
     switch (type) {
@@ -103,7 +81,7 @@ export default function PaymentMethodsScreen() {
   };
 
   const handleAddPaymentMethod = () => {
-    Alert.alert('Add Payment Method', 'This feature will be implemented soon.');
+    router.push('/add-card');
   };
 
   return (
@@ -120,55 +98,75 @@ export default function PaymentMethodsScreen() {
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {/* Payment Methods List */}
-        <View style={styles.methodsList}>
-          {paymentMethods.map((method) => (
-            <View key={method.id} style={styles.methodCard}>
-              <View style={styles.methodInfo}>
-                <View style={[styles.methodIcon, { backgroundColor: getPaymentColor(method.type) + '20' }]}>
-                  <Ionicons 
-                    name={getPaymentIcon(method.type) as any} 
-                    size={24} 
-                    color={getPaymentColor(method.type)} 
-                  />
+        {paymentMethods.length > 0 ? (
+          <>
+            {/* Payment Methods List */}
+            <View style={styles.methodsList}>
+              {paymentMethods.map((method) => (
+                <View key={method.id} style={styles.methodCard}>
+                  <View style={styles.methodInfo}>
+                    <View style={[styles.methodIcon, { backgroundColor: getPaymentColor(method.type) + '20' }]}>
+                      <Ionicons 
+                        name={getPaymentIcon(method.type) as any} 
+                        size={24} 
+                        color={getPaymentColor(method.type)} 
+                      />
+                    </View>
+                    <View style={styles.methodDetails}>
+                      <Text style={styles.methodName}>{method.name}</Text>
+                      <Text style={styles.methodNumber}>{method.details}</Text>
+                      {method.isDefault && (
+                        <Text style={styles.defaultLabel}>Default</Text>
+                      )}
+                    </View>
+                  </View>
+                  
+                  <View style={styles.methodActions}>
+                    {!method.isDefault && (
+                      <TouchableOpacity 
+                        onPress={() => handleSetDefault(method.id)}
+                        style={styles.actionButton}
+                      >
+                        <Text style={styles.setDefaultText}>Set Default</Text>
+                      </TouchableOpacity>
+                    )}
+                    <TouchableOpacity 
+                      onPress={() => handleDeleteMethod(method.id)}
+                      style={styles.deleteButton}
+                    >
+                      <Ionicons name="trash-outline" size={20} color="#ff4444" />
+                    </TouchableOpacity>
+                  </View>
                 </View>
-                <View style={styles.methodDetails}>
-                  <Text style={styles.methodName}>{method.name}</Text>
-                  <Text style={styles.methodNumber}>{method.details}</Text>
-                  {method.isDefault && (
-                    <Text style={styles.defaultLabel}>Default</Text>
-                  )}
-                </View>
-              </View>
-              
-              <View style={styles.methodActions}>
-                {!method.isDefault && (
-                  <TouchableOpacity 
-                    onPress={() => handleSetDefault(method.id)}
-                    style={styles.actionButton}
-                  >
-                    <Text style={styles.setDefaultText}>Set Default</Text>
-                  </TouchableOpacity>
-                )}
-                <TouchableOpacity 
-                  onPress={() => handleDeleteMethod(method.id)}
-                  style={styles.deleteButton}
-                >
-                  <Ionicons name="trash-outline" size={20} color="#ff4444" />
-                </TouchableOpacity>
-              </View>
+              ))}
             </View>
-          ))}
-        </View>
 
-        {/* Add Payment Method Button */}
-        <TouchableOpacity 
-          style={styles.addButton}
-          onPress={handleAddPaymentMethod}
-        >
-          <Ionicons name="add" size={24} color="#6366f1" />
-          <Text style={styles.addButtonText}>Add Payment Method</Text>
-        </TouchableOpacity>
+            {/* Add Payment Method Button */}
+            <TouchableOpacity 
+              style={styles.addButton}
+              onPress={handleAddPaymentMethod}
+            >
+              <Ionicons name="add" size={24} color="#6366f1" />
+              <Text style={styles.addButtonText}>Add Payment Method</Text>
+            </TouchableOpacity>
+          </>
+        ) : (
+          /* Empty State */
+          <View style={styles.emptyState}>
+            <View style={styles.emptyIcon}>
+              <Ionicons name="card-outline" size={60} color="#ccc" />
+            </View>
+            <Text style={styles.emptyTitle}>You don't have any</Text>
+            <Text style={styles.emptySubtitle}>payment method. Add now.</Text>
+            
+            <TouchableOpacity 
+              style={styles.addNewButton}
+              onPress={handleAddPaymentMethod}
+            >
+              <Text style={styles.addNewButtonText}>Add New</Text>
+            </TouchableOpacity>
+          </View>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -284,5 +282,36 @@ const styles = StyleSheet.create({
     color: '#6366f1',
     fontWeight: '600',
     marginLeft: 8,
+  },
+  emptyState: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 100,
+  },
+  emptyIcon: {
+    marginBottom: 24,
+  },
+  emptyTitle: {
+    fontSize: 16,
+    color: '#333',
+    textAlign: 'center',
+  },
+  emptySubtitle: {
+    fontSize: 16,
+    color: '#333',
+    textAlign: 'center',
+    marginBottom: 32,
+  },
+  addNewButton: {
+    backgroundColor: '#6366f1',
+    paddingHorizontal: 32,
+    paddingVertical: 12,
+    borderRadius: 25,
+  },
+  addNewButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });
