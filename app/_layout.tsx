@@ -1,6 +1,6 @@
 import { Stack } from "expo-router";
-import { AuthProvider, useAuth } from "../src/services/authContext";
 import LoadingScreen from "../src/components/LoadingScreen";
+import { AuthProvider, useAuth } from "../src/services/authContext";
 
 function RootLayoutNav() {
   const { isLoading } = useAuth();
@@ -27,6 +27,7 @@ function RootLayoutNav() {
       <Stack.Screen name="booking" />
       <Stack.Screen name="chat" />
       <Stack.Screen name="profile" />
+      <Stack.Screen name="payment-methods" />
       <Stack.Screen name="faqs" />
       <Stack.Screen name="chat-conversation" />
       <Stack.Screen name="voice-call" />

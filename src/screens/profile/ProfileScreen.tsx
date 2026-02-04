@@ -41,6 +41,8 @@ export default function ProfileScreen() {
       handleLogout();
     } else if (title === 'FAQs') {
       router.push('/faqs');
+    } else if (title === 'Payment Methods') {
+      router.push('/payment-methods');
     }
   };
   const menuItems = [
