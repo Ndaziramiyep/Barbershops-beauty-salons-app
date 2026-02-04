@@ -60,11 +60,15 @@ export default function PaymentMethodsScreen() {
       case 'paypal':
         return 'logo-paypal';
       case 'card':
+      case 'visa':
+      case 'mastercard':
         return 'card-outline';
       case 'apple_pay':
         return 'logo-apple';
       case 'google_pay':
         return 'logo-google';
+      case 'phone':
+        return 'phone-portrait-outline';
       default:
         return 'card-outline';
     }
@@ -75,11 +79,16 @@ export default function PaymentMethodsScreen() {
       case 'paypal':
         return '#0070ba';
       case 'card':
+      case 'visa':
+        return '#1a1f71';
+      case 'mastercard':
         return '#eb001b';
       case 'apple_pay':
         return '#000';
       case 'google_pay':
         return '#4285f4';
+      case 'phone':
+        return '#28a745';
       default:
         return '#666';
     }
@@ -112,7 +121,7 @@ export default function PaymentMethodsScreen() {
   };
 
   const handleAddPaymentMethod = () => {
-    router.push('/add-card');
+    router.push('/add-payment-method');
   };
 
   return (
@@ -152,22 +161,9 @@ export default function PaymentMethodsScreen() {
                     </View>
                   </View>
                   
-                  <View style={styles.methodActions}>
-                    {!method.isDefault && (
-                      <TouchableOpacity 
-                        onPress={() => handleSetDefault(method.id)}
-                        style={styles.actionButton}
-                      >
-                        <Text style={styles.setDefaultText}>Set Default</Text>
-                      </TouchableOpacity>
-                    )}
-                    <TouchableOpacity 
-                      onPress={() => handleDeleteMethod(method.id)}
-                      style={styles.deleteButton}
-                    >
-                      <Ionicons name="trash-outline" size={20} color="#ff4444" />
-                    </TouchableOpacity>
-                  </View>
+                  <TouchableOpacity>
+                    <Ionicons name="chevron-forward" size={20} color="#999" />
+                  </TouchableOpacity>
                 </View>
               ))}
             </View>
@@ -239,10 +235,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#fff',
     borderRadius: 12,
     padding: 16,
-    marginBottom: 12,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: '#f0f0f0',
   },
   methodInfo: {
     flexDirection: 'row',

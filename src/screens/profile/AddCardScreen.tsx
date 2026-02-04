@@ -11,16 +11,67 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function AddCardScreen() {
   const router = useRouter();
+  const { type = 'card' } = useLocalSearchParams();
   const [cardNumber, setCardNumber] = useState('');
   const [cardHolder, setCardHolder] = useState('');
   const [expDate, setExpDate] = useState('');
   const [cvv, setCvv] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [email, setEmail] = useState('');
+  const [accountName, setAccountName] = useState('');
   const [setAsDefault, setSetAsDefault] = useState(false);
+
+  const getPaymentTypeInfo = () => {
+    switch (type) {
+      case 'paypal':
+        return { title: 'Add PayPal', icon: 'logo-paypal', color: '#0070ba' };
+      case 'apple_pay':
+        return { title: 'Add Apple Pay', icon: 'logo-apple', color: '#000' };
+      case 'google_pay':
+        return { title: 'Add Google Pay', icon: 'logo-google', color: '#4285f4' };
+      case 'phone':
+        return { title: 'Add Mobile Money', icon: 'phone-portrait-outline', color: '#28a745' };
+      default:
+        return { title: 'Add Card', icon: 'card', color: '#6366f1' };
+    }
+  };
+
+  const validateFields = () => {
+    switch (type) {
+      case 'card':
+        return cardNumber && cardHolder && expDate && cvv;
+      case 'paypal':
+        return email && accountName;
+      case 'phone':
+        return phoneNumber && accountName;
+      case 'apple_pay':
+      case 'google_pay':
+        return accountName;
+      default:
+        return false;
+    }
+  };
+
+  const getPaymentDetails = () => {
+    switch (type) {
+      case 'card':
+        return `**** **** **** ${cardNumber.slice(-4)}`;
+      case 'paypal':
+        return email;
+      case 'phone':
+        return phoneNumber;
+      case 'apple_pay':
+      case 'google_pay':
+        return accountName;
+      default:
+        return '';
+    }
+  };
 
   const formatCardNumber = (text: string) => {
     const cleaned = text.replace(/\s/g, '');
@@ -47,46 +98,37 @@ export default function AddCardScreen() {
   };
 
   const handleAddCard = async () => {
-    if (!cardNumber || !cardHolder || !expDate || !cvv) {
-      Alert.alert('Error', 'Please fill in all fields');
+    if (!validateFields()) {
+      Alert.alert('Error', 'Please fill in all required fields');
       return;
     }
 
     try {
-      // Load existing payment methods
       const stored = await AsyncStorage.getItem('paymentMethods');
       const existingMethods = stored ? JSON.parse(stored) : [];
-      console.log('Existing methods:', existingMethods);
       
-      // Create new card
-      const newCard = {
+      const newPaymentMethod = {
         id: Date.now().toString(),
-        type: 'card' as const,
-        name: getCardType(),
-        details: `**** **** **** ${cardNumber.slice(-4)}`,
-        isDefault: setAsDefault || existingMethods.length === 0, // First card is default
+        type: type as string,
+        name: type === 'card' ? getCardType() : getPaymentTypeInfo().title.replace('Add ', ''),
+        details: getPaymentDetails(),
+        isDefault: setAsDefault || existingMethods.length === 0,
       };
-      console.log('New card:', newCard);
       
-      // If setting as default, update existing methods
       const updatedMethods = setAsDefault 
         ? existingMethods.map((method: any) => ({ ...method, isDefault: false }))
         : existingMethods;
       
-      // Add new card
-      updatedMethods.push(newCard);
-      console.log('Updated methods:', updatedMethods);
+      updatedMethods.push(newPaymentMethod);
       
-      // Save to storage
       await AsyncStorage.setItem('paymentMethods', JSON.stringify(updatedMethods));
-      console.log('Saved to AsyncStorage');
       
-      Alert.alert('Success', 'Card added successfully!', [
+      Alert.alert('Success', 'Payment method added successfully!', [
         { text: 'OK', onPress: () => router.back() }
       ]);
     } catch (error) {
-      console.error('Error adding card:', error);
-      Alert.alert('Error', 'Failed to add card');
+      console.error('Error adding payment method:', error);
+      Alert.alert('Error', 'Failed to add payment method');
     }
   };
 
@@ -106,89 +148,166 @@ export default function AddCardScreen() {
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Ionicons name="close" size={24} color="#333" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Add Card</Text>
+        <Text style={styles.headerTitle}>{getPaymentTypeInfo().title}</Text>
         <View style={styles.placeholder} />
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {/* Card Preview */}
-        <View style={styles.cardPreview}>
-          <View style={styles.card}>
-            <View style={styles.cardHeader}>
-              <Ionicons name="card" size={24} color="#fff" />
-              <Text style={styles.cardType}>{getCardType()}</Text>
+        {type === 'card' ? (
+          <>
+            {/* Card Preview */}
+            <View style={styles.cardPreview}>
+              <View style={styles.card}>
+                <View style={styles.cardHeader}>
+                  <Ionicons name="card" size={24} color="#fff" />
+                  <Text style={styles.cardType}>{getCardType()}</Text>
+                </View>
+                
+                <Text style={styles.cardNumberDisplay}>
+                  {cardNumber || '4550 4545 1234 9876'}
+                </Text>
+                
+                <View style={styles.cardFooter}>
+                  <Text style={styles.cardHolderDisplay}>
+                    {cardHolder || 'Jenny Wilson'}
+                  </Text>
+                  <Text style={styles.cardExpDisplay}>
+                    {expDate || '03/22'}
+                  </Text>
+                </View>
+              </View>
             </View>
-            
-            <Text style={styles.cardNumberDisplay}>
-              {cardNumber || '4550 4545 1234 9876'}
-            </Text>
-            
-            <View style={styles.cardFooter}>
-              <Text style={styles.cardHolderDisplay}>
-                {cardHolder || 'Jenny Wilson'}
-              </Text>
-              <Text style={styles.cardExpDisplay}>
-                {expDate || '03/22'}
-              </Text>
-            </View>
-          </View>
-        </View>
 
-        {/* Form Fields */}
+            {/* Card Form Fields */}
+            <View style={styles.form}>
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>Card number</Text>
+                <View style={styles.inputContainer}>
+                  <Ionicons name="card-outline" size={20} color="#999" style={styles.inputIcon} />
+                  <TextInput
+                    style={styles.input}
+                    placeholder="4550 4545 1234 9876"
+                    value={cardNumber}
+                    onChangeText={handleCardNumberChange}
+                    keyboardType="numeric"
+                    maxLength={19}
+                  />
+                </View>
+              </View>
+
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>Card holder</Text>
+                <TextInput
+                  style={styles.inputField}
+                  placeholder="Jenny Wilson"
+                  value={cardHolder}
+                  onChangeText={setCardHolder}
+                />
+              </View>
+
+              <View style={styles.row}>
+                <View style={[styles.inputGroup, styles.halfWidth]}>
+                  <Text style={styles.label}>Exp Date</Text>
+                  <TextInput
+                    style={styles.inputField}
+                    placeholder="MM/YY"
+                    value={expDate}
+                    onChangeText={handleExpDateChange}
+                    keyboardType="numeric"
+                    maxLength={5}
+                  />
+                </View>
+
+                <View style={[styles.inputGroup, styles.halfWidth]}>
+                  <Text style={styles.label}>CVV</Text>
+                  <TextInput
+                    style={styles.inputField}
+                    placeholder="000"
+                    value={cvv}
+                    onChangeText={setCvv}
+                    keyboardType="numeric"
+                    maxLength={3}
+                    secureTextEntry
+                  />
+                </View>
+              </View>
+            </View>
+          </>
+        ) : (
+          /* Other Payment Methods Form */
+          <View style={styles.form}>
+            <View style={styles.paymentTypeHeader}>
+              <View style={[styles.paymentTypeIcon, { backgroundColor: getPaymentTypeInfo().color + '20' }]}>
+                <Ionicons name={getPaymentTypeInfo().icon as any} size={32} color={getPaymentTypeInfo().color} />
+              </View>
+              <Text style={styles.paymentTypeName}>{getPaymentTypeInfo().title}</Text>
+            </View>
+
+            {type === 'paypal' && (
+              <>
+                <View style={styles.inputGroup}>
+                  <Text style={styles.label}>Email Address</Text>
+                  <TextInput
+                    style={styles.inputField}
+                    placeholder="jenny.wilson@email.com"
+                    value={email}
+                    onChangeText={setEmail}
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                  />
+                </View>
+                <View style={styles.inputGroup}>
+                  <Text style={styles.label}>Account Name</Text>
+                  <TextInput
+                    style={styles.inputField}
+                    placeholder="Jenny Wilson"
+                    value={accountName}
+                    onChangeText={setAccountName}
+                  />
+                </View>
+              </>
+            )}
+
+            {type === 'phone' && (
+              <>
+                <View style={styles.inputGroup}>
+                  <Text style={styles.label}>Phone Number</Text>
+                  <TextInput
+                    style={styles.inputField}
+                    placeholder="+1 234 567 8900"
+                    value={phoneNumber}
+                    onChangeText={setPhoneNumber}
+                    keyboardType="phone-pad"
+                  />
+                </View>
+                <View style={styles.inputGroup}>
+                  <Text style={styles.label}>Account Name</Text>
+                  <TextInput
+                    style={styles.inputField}
+                    placeholder="Jenny Wilson"
+                    value={accountName}
+                    onChangeText={setAccountName}
+                  />
+                </View>
+              </>
+            )}
+
+            {(type === 'apple_pay' || type === 'google_pay') && (
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>Account Name</Text>
+                <TextInput
+                  style={styles.inputField}
+                  placeholder="Jenny Wilson"
+                  value={accountName}
+                  onChangeText={setAccountName}
+                />
+              </View>
+            )}
+          </View>
+        )}
+
+        {/* Default Payment Method Checkbox */}
         <View style={styles.form}>
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Card number</Text>
-            <View style={styles.inputContainer}>
-              <Ionicons name="card-outline" size={20} color="#999" style={styles.inputIcon} />
-              <TextInput
-                style={styles.input}
-                placeholder="4550 4545 1234 9876"
-                value={cardNumber}
-                onChangeText={handleCardNumberChange}
-                keyboardType="numeric"
-                maxLength={19}
-              />
-            </View>
-          </View>
-
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Card holder</Text>
-            <TextInput
-              style={styles.inputField}
-              placeholder="Jenny Wilson"
-              value={cardHolder}
-              onChangeText={setCardHolder}
-            />
-          </View>
-
-          <View style={styles.row}>
-            <View style={[styles.inputGroup, styles.halfWidth]}>
-              <Text style={styles.label}>Exp Date</Text>
-              <TextInput
-                style={styles.inputField}
-                placeholder="MM/YY"
-                value={expDate}
-                onChangeText={handleExpDateChange}
-                keyboardType="numeric"
-                maxLength={5}
-              />
-            </View>
-
-            <View style={[styles.inputGroup, styles.halfWidth]}>
-              <Text style={styles.label}>CVV</Text>
-              <TextInput
-                style={styles.inputField}
-                placeholder="000"
-                value={cvv}
-                onChangeText={setCvv}
-                keyboardType="numeric"
-                maxLength={3}
-                secureTextEntry
-              />
-            </View>
-          </View>
-
-          {/* Default Payment Method Checkbox */}
           <TouchableOpacity 
             style={styles.checkboxContainer}
             onPress={() => setSetAsDefault(!setAsDefault)}
@@ -356,5 +475,22 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
+  },
+  paymentTypeHeader: {
+    alignItems: 'center',
+    marginBottom: 32,
+  },
+  paymentTypeIcon: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+  },
+  paymentTypeName: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#333',
   },
 });
